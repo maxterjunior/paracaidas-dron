@@ -1,0 +1,15 @@
+# KiCad
+*.kicad_prl
+*-backups/
+*.zip
+fp-info-cache
+
+# KiCad history plugin
+.history/
+
+# Claude Code
+.claude
+
+# OS
+.DS_Store
+Thumbs.db
