@@ -365,12 +365,17 @@ def place_comp(lib_id, ref, val, cx, cy, angle, pin_map):
     lines.append(')\n')
     return '\n'.join(lines)
 
+_pwr_counter = 0
+
 def place_power(name, x, y, angle=0):
+    global _pwr_counter
+    _pwr_counter += 1
+    ref = f'#PWR{_pwr_counter:03d}'
     # Must use (symbol ...) not (power ...) — analyzer only reads (symbol ...) elements
     return (f'(symbol (lib_id {esc("power:"+name)}) (at {x} {y} {angle}) (unit 1)\n'
             f'  (exclude_from_sim no)(in_bom yes)(on_board yes)\n'
             f'  (uuid {esc(u())})\n'
-            f'  (property "Reference" "#PWR01" (at {x} {y-1.5} 0) (effects (font (size 1.27 1.27)) (hide yes)))\n'
+            f'  (property "Reference" {esc(ref)} (at {x} {y-1.5} 0) (effects (font (size 1.27 1.27)) (hide yes)))\n'
             f'  (property "Value" {esc(name)} (at {x} {y+2} 0) (effects (font (size 1.27 1.27))))\n'
             f'  (pin "1" (uuid {esc(u())}))\n)\n')
 
