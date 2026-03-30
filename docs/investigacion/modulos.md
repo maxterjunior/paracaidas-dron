@@ -95,6 +95,110 @@ Con regulador 3.3V (LDO tipo MCP1700) para el PIC y la IMU.
 
 ---
 
+## Paracaídas — Canopia y Mecanismo de Despliegue
+
+### Dimensionamiento
+
+Para el Matrice 400 (peor caso 11 kg, velocidad de descenso objetivo ≤6 m/s):
+
+```
+Área = (2 × m × g) / (Cd × ρ × v²)
+     = (2 × 11 × 9.81) / (0.75 × 1.225 × 36)
+     ≈ 0.82 m²   →  diámetro ~1.02 m  (circular, Cd≈0.75)
+```
+
+**Recomendación:** diámetro **1.2–1.3 m** con margen de seguridad. Peso del conjunto: 80–150 g.
+
+### Tipo de Canopia
+
+| Tipo | Estabilidad | Complejidad | Recomendado |
+|------|------------|-------------|-------------|
+| Circular clásico | Media | Baja | ✅ Opción principal |
+| Cruciforme (cross) | Alta | Media | ✅ Alternativa más estable |
+| Ballistic/rocket-deployed | Alta | Alta | Para futuras versiones |
+
+**Material seleccionado: Ripstop Nylon 30D con recubrimiento sil-nylon**
+
+| Propiedad | Valor |
+|-----------|-------|
+| Peso | ~35 g/m² → ~40 g para 1.13 m² (Ø1.2 m) |
+| Recubrimiento | Silicona (sil-nylon) — reduce porosidad, hidrófugo |
+| Resistencia | Trama ripstop cada ~5 mm evita propagación de desgarros |
+| Plegabilidad | Excelente — comprime bien dentro del tubo de muelle |
+
+- **Fuentes:** "sil-nylon 30D ripstop" en AliExpress/Amazon (~$3–6/m²), ancho típico 150 cm
+
+### Construcción — Patrón y Costura
+
+**Patrón:** 8 gajos trapezoidales iguales (360°/8 = 45° por gajo)
+
+| Dimensión | Valor |
+|-----------|-------|
+| Cantidad de gajos | 8 |
+| Alto del gajo | ~0.6 m (radio del paracaídas) |
+| Ancho en la base | (π × 1.2) / 8 ≈ 0.47 m |
+| Margen de costura | 1.5 cm en cada borde longitudinal |
+
+**Orden de costura:**
+
+1. Cortar 8 gajos idénticos con margen de 1.5 cm
+2. Unir gajos de a pares → 4 piezas (4 costuras)
+3. Unir los 4 pares → 2 mitades (2 costuras)
+4. Unir las 2 mitades → canopia completa (1 costura)
+5. Reforzar el ápex
+6. Dobladillo en el borde inferior
+7. Fijar las 8 cuerdas de suspensión
+
+**Tipos de costura por zona:**
+
+| Costura | Dónde | Por qué |
+|---------|-------|---------|
+| Plana francesa (flat-felled) | Unión de gajos | Encapsula las hebras, distribuye carga |
+| Doble pespunte (2 líneas a 3 mm) | Todo el paracaídas | Mínimo resistente |
+| Zigzag | Dobladillo del borde inferior | Permite elasticidad leve |
+
+La costura plana francesa es la crítica: se cose derecho con derecho a 1 cm, se abre, se dobla un margen sobre el otro (0.5 cm) y se cose encima — todas las hebras quedan encapsuladas.
+
+**Refuerzo del ápex:**
+
+- Parche de tafetán 10×10 cm pegado con adhesivo de contacto + cosido en X
+- Ojal reforzado o anillo de acero inoxidable Ø15 mm para atar las cuerdas
+
+**Suspensión:**
+
+- 8 cuerdas Dyneema/Spectra 1 mm o nylon paracord 1.5 mm, longitud ~1.2 m c/u
+- Cada cuerda pasa por dentro del dobladillo del borde y sale por un refuerzo de tafetán (3×3 cm) cosido en el punto de anclaje
+- Nudo de alondra o costura en barra sobre cada refuerzo
+
+**Herramientas mínimas:**
+
+- Máquina de coser con aguja 70/10 (telas livianas)
+- Hilo nylon 210D o poliéster N°50
+- Papel kraft para el patrón
+- Marcador de tela + regla curva
+
+### Mecanismo de Despliegue
+
+Compatible con el solenoid 5V (SOL1) del circuito actual:
+
+| Mecanismo | Integración con SOL1 | Velocidad | Seleccionado |
+|-----------|---------------------|-----------|-------------|
+| Caja de resorte comprimido | ✅ Solenoid libera el seguro | ~100–200 ms | — |
+| **Tubo de muelle (spring tube)** | ✅ Solenoid empuja el tapón | ~50–100 ms | ✅ |
+| Velcro + resorte | ✅ Solenoid corta tensión | ~150 ms | — |
+| Pirotécnico (e-match) | ⚠️ Requiere rediseño circuito | <50 ms | — |
+
+**Selección:** tubo de muelle + solenoid como seguro mecánico.
+Lógica: solenoid energizado = retenido; activado = muelle expulsa el paracaídas.
+
+### Dónde Conseguir
+
+- **Listo para usar:** Fruity Chutes, Mars Parachutes, AliExpress "drone parachute 1.2m ripstop" (~$15–30)
+- **Hecho a medida:** ripstop nylon + costuras radiales
+- **Referencia:** ParaZero SafeAir (whitepapers públicos)
+
+---
+
 ## Notas de Diseño
 
 - El PIC opera a 3.3V → mismo nivel que la IMU → sin conversores de nivel
@@ -102,3 +206,4 @@ Con regulador 3.3V (LDO tipo MCP1700) para el PIC y la IMU.
 - Filtro IIR de primer orden en firmware para eliminar vibración de motores
 - Umbral de caída libre: `|√(ax²+ay²+az²)| < 0.3g` sostenido por >100 ms
 - El solenoid de 5V requiere boost desde LiPo 3.7V → regulador step-up (MT3608 o similar)
+- Paracaídas circular 1.2–1.3 m de ripstop; tiempo despliegue ~100–200 ms con resorte + solenoid

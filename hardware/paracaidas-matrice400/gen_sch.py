@@ -96,44 +96,57 @@ MPU = {
 # Connector 1x04: pins at (0, 3.81), (0, 1.27), (0, -1.27), (0, -3.81)
 CONN4 = {'1':(0,3.81), '2':(0,1.27), '3':(0,-1.27), '4':(0,-3.81)}
 
-# ── Component placements: (lib_id, ref, value, cx, cy, angle, pin_map) ───────
+# Footprint shortcuts
+FP_R    = 'Resistor_THT:R_Axial_DIN0207_L6.3mm_D2.5mm_P10.16mm_Horizontal'
+FP_C    = 'Capacitor_THT:C_Disc_D5.0mm_W2.5mm_P5.00mm'
+FP_CP   = 'Capacitor_THT:CP_Radial_D6.3mm_P2.50mm'
+FP_LED  = 'LED_THT:LED_D5.0mm'
+FP_D    = 'Diode_THT:D_DO-41_SOD81_P10.16mm_Horizontal'
+FP_L    = 'Inductor_THT:L_Axial_L5.3mm_D2.2mm_P10.16mm_Horizontal'
+FP_NPN  = 'Package_TO_SOT_THT:TO-92_Inline'
+FP_NMOS = 'Package_TO_SOT_THT:TO-220-3_Vertical'
+FP_CONN = 'Connector_PinHeader_2.54mm:PinHeader_1x04_P2.54mm_Vertical'
+FP_SW   = 'Button_Switch_THT:SW_Slide_1P2T_CK_OS102011MS2Q'
+FP_PUSH = 'Button_Switch_THT:SW_PUSH_6mm'
+
+# ── Component placements: (lib_id, ref, value, cx, cy, angle, pin_map, footprint) ──
 COMPS = [
     # Power supply block (left side)
-    ('Device:Battery_Cell',              'BT1',   'LiPo_1S_1000mAh', -120, 50,  0, BAT),
-    ('Switch:SW_SPST',                   'SW1',   'SW_ON-OFF',        -105, 50,  0, SW_SPST),
-    ('Regulator_Linear:MCP1700-3302E',   'U3',    'MCP1700-3302E',     -88, 18,  0, MCP),
-    ('Device:C',                         'C2',    '10uF',              -72, 18,  0, C),
-    ('Regulator_Switching:MT3608',       'U4',    'MT3608',            -75, 50,  0, MT),
-    ('Device:C',                         'C5',    '100nF',             -90, 62,  0, C),
-    ('Device:L',                         'L1',    '22uH_1A',           -55, 38, 90, L),  # horizontal
-    ('Device:C',                         'C4',    '100uF',             -40, 50,  0, C),
-    ('Device:R',                         'R_FB1', '750k',              -58, 62,  0, R),
-    ('Device:R',                         'R_FB2', '100k',              -58, 72,  0, R),
+    ('Device:Battery_Cell',              'BT1',   'LiPo_1S_1000mAh', -120, 50,  0, BAT,     'Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical'),
+    ('Switch:SW_SPST',                   'SW1',   'SW_ON-OFF',        -105, 50,  0, SW_SPST, FP_SW),
+    ('Regulator_Linear:MCP1700-3302E',   'U3',    'MCP1700-3302E',     -88, 18,  0, MCP,     'Package_TO_SOT_SMD:SOT-23'),
+    ('Device:C',                         'C2',    '10uF',              -72, 18,  0, C,       FP_CP),
+    ('Regulator_Switching:MT3608',       'U4',    'MT3608',            -75, 50,  0, MT,      'Package_TO_SOT_SMD:SOT-23-6'),
+    ('Device:C',                         'C5',    '100nF',             -90, 62,  0, C,       FP_C),
+    ('Device:L',                         'L1',    '22uH_1A',           -55, 38, 90, L,       FP_L),
+    ('Device:C',                         'C4',    '100uF',             -40, 50,  0, C,       FP_CP),
+    ('Device:R',                         'R_FB1', '750k',              -58, 62,  0, R,       FP_R),
+    ('Device:R',                         'R_FB2', '100k',              -58, 72,  0, R,       FP_R),
     # MCU block (center)
-    ('MCU:PIC18LF25K22',                 'U1',    'PIC18LF25K22',        0, 20,  0, PIC),
-    ('Device:R',                         'R1',    '10k',               -28,-10,  0, R),
-    ('Switch:SW_Push',                   'SW2',   'SW_Push_MCLR',      -28,  0,  0, SW_PUSH),
-    ('Device:C',                         'C1',    '100nF',              22, -5,  0, C),
+    ('MCU:PIC18LF25K22',                 'U1',    'PIC18LF25K22',        0, 20,  0, PIC,     'Package_DIP:DIP-28_W7.62mm'),
+    ('Device:R',                         'R1',    '10k',               -28,-10,  0, R,       FP_R),
+    ('Switch:SW_Push',                   'SW2',   'SW_Push_MCLR',      -28,  0,  0, SW_PUSH, FP_PUSH),
+    ('Device:C',                         'C1',    '100nF',              22, -5,  0, C,       FP_C),
     # IMU block (upper right)
-    ('Sensor_Motion:MPU-6050',           'U2',    'MPU-6050',           80,-20,  0, MPU),
-    ('Device:R',                         'R5',    '4k7',                62,-43,  0, R),
-    ('Device:R',                         'R6',    '4k7',                74,-43,  0, R),
-    ('Device:C',                         'C3',    '100nF',             100,-32,  0, C),
+    ('Sensor_Motion:MPU-6050',           'U2',    'MPU-6050',           80,-20,  0, MPU,     'Connector_PinHeader_2.54mm:PinHeader_2x04_P2.54mm_Vertical'),
+    ('Device:R',                         'R5',    '4k7',                62,-43,  0, R,       FP_R),
+    ('Device:R',                         'R6',    '4k7',                74,-43,  0, R,       FP_R),
+    ('Device:C',                         'C3',    '100nF',             100,-32,  0, C,       FP_C),
     # Output block (right)
-    ('Device:R',                         'R3',    '330',                55, -5, 90, R),  # horizontal
-    ('Device:LED',                       'LED1',  'LED_Verde',          68, -5, 90, LED),
-    ('Device:R',                         'R4',    '330',                55,  5, 90, R),
-    ('Device:LED',                       'LED2',  'LED_Rojo',           68,  5, 90, LED),
-    ('Device:R',                         'R2',    '10k',                55, 20,  0, R),  # pull-down
-    ('Device:Q_NMOS_GDS',                'Q1',    'IRLZ44N',            72, 20,  0, NMOS),
-    ('Device:D',                         'D1',    '1N4007',             88, 12,  0, D),
-    ('Mechanical:Solenoid',              'SOL1',  'Solenoid_5V',       105, 10,  0, SOL),
-    ('Device:R',                         'R7',    '1k',                 55, 40, 90, R),  # horizontal
-    ('Device:Q_NPN_BCE',                 'Q2',    '2N3904',             72, 40,  0, NPN),
-    ('Device:Buzzer',                    'BZ1',   'Buzzer_5V',          90, 37,  0, BUZ),
+    ('Device:R',                         'R3',    '330',                55, -5, 90, R,       FP_R),
+    ('Device:LED',                       'LED1',  'LED_Verde',          68, -5, 90, LED,     FP_LED),
+    ('Device:R',                         'R4',    '330',                55,  5, 90, R,       FP_R),
+    ('Device:LED',                       'LED2',  'LED_Rojo',           68,  5, 90, LED,     FP_LED),
+    ('Device:R',                         'R2',    '10k',                55, 20,  0, R,       FP_R),
+    ('Device:Q_NMOS_GDS',                'Q1',    'IRLZ44N',            72, 20,  0, NMOS,    FP_NMOS),
+    ('Device:D',                         'D1',    '1N4007',             88, 12,  0, D,       FP_D),
+    ('Mechanical:Solenoid',              'SOL1',  'Solenoid_5V',       105, 10,  0, SOL,     'Connector_PinHeader_2.54mm:PinHeader_1x02_P2.54mm_Vertical'),
+    ('Device:R',                         'R7',    '1k',                 55, 40, 90, R,       FP_R),
+    ('Device:Q_NPN_BCE',                 'Q2',    '2N3904',             72, 40,  0, NPN,     FP_NPN),
+    ('Device:Buzzer',                    'BZ1',   'Buzzer_5V',          90, 37,  0, BUZ,     'Buzzer_Beeper:ABT-410-RC'),
     # Connectors
-    ('Connector_Generic:Conn_01x04',     'J1',    'UART_Debug',        -10, 75,  0, CONN4),
-    ('Connector_Generic:Conn_01x04',     'J2',    'ICSP_PICKit',        20, 75,  0, CONN4),
+    ('Connector_Generic:Conn_01x04',     'J1',    'UART_Debug',        -10, 75,  0, CONN4,   FP_CONN),
+    ('Connector_Generic:Conn_01x04',     'J2',    'ICSP_PICKit',        20, 75,  0, CONN4,   FP_CONN),
 ]
 
 # ── Net connectivity ──────────────────────────────────────────────────────────
@@ -347,13 +360,13 @@ def lib_symbols():
     return s
 
 # ── Place component ───────────────────────────────────────────────────────────
-def place_comp(lib_id, ref, val, cx, cy, angle, pin_map):
+def place_comp(lib_id, ref, val, cx, cy, angle, pin_map, footprint=''):
     lines = [f'(symbol (lib_id {esc(lib_id)}) (at {cx} {cy} {angle}) (unit 1)']
     lines.append('  (exclude_from_sim no)(in_bom yes)(on_board yes)')
     lines.append(f'  (uuid {esc(u())})')
     lines.append(f'  (property "Reference" {esc(ref)} (at {cx+3} {cy-3} 0) (effects (font (size 1.27 1.27))))')
     lines.append(f'  (property "Value" {esc(val)} (at {cx+3} {cy+3} 0) (effects (font (size 1.27 1.27))))')
-    lines.append(f'  (property "Footprint" "" (at {cx} {cy} 0) (effects (font (size 1.27 1.27)) (hide yes)))')
+    lines.append(f'  (property "Footprint" {esc(footprint)} (at {cx} {cy} 0) (effects (font (size 1.27 1.27)) (hide yes)))')
     lines.append(f'  (property "Datasheet" "" (at {cx} {cy} 0) (effects (font (size 1.27 1.27)) (hide yes)))')
     # Only emit each unique pin name/number once, prefer names over numbers
     seen_pos = set()
@@ -394,9 +407,10 @@ def build():
     # Build comp lookup
     comp_map = {}
     for comp in COMPS:
-        lib_id,ref,val,cx,cy,angle,pmap = comp
+        lib_id,ref,val,cx,cy,angle,pmap,*fp = comp
+        footprint = fp[0] if fp else ''
         comp_map[ref] = comp
-        parts.append(place_comp(lib_id,ref,val,cx,cy,angle,pmap))
+        parts.append(place_comp(lib_id,ref,val,cx,cy,angle,pmap,footprint))
 
     # Net labels / power symbols at exact pin positions
     POWER_NETS = {'+3V3','+5V','GND','VBAT','VBAT_SW','BOOST_SW','BOOST_FB'}
@@ -404,7 +418,7 @@ def build():
         for ref, pname in pin_list:
             if ref not in comp_map:
                 print(f'WARN: {ref} not found'); continue
-            _,_,_,cx,cy,angle,pmap = comp_map[ref]
+            _,_,_,cx,cy,angle,pmap,*_ = comp_map[ref]
             if pname not in pmap:
                 print(f'WARN: {ref}.{pname} not in pmap (available: {list(pmap)[:5]})'); continue
             px,py = pmap[pname]
@@ -416,7 +430,7 @@ def build():
 
     # No-connects
     for ref, pname in NC:
-        _,_,_,cx,cy,angle,pmap = comp_map[ref]
+        _,_,_,cx,cy,angle,pmap,*_ = comp_map[ref]
         if pname not in pmap: continue
         px,py = pmap[pname]
         sx,sy = pin_pos(cx,cy,angle,px,py)
