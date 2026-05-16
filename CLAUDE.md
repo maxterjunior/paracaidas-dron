@@ -9,25 +9,9 @@ Emergency parachute deployment system for the DJI Matrice 400 drone (~6.7 kg, MT
 ## Key Architecture
 
 ### Hardware Design (KiCad)
-- Project lives in `hardware/paracaidas-matrice400/`
-- The schematic (`.kicad_sch`) is **code-generated** by `gen_sch.py` — do not hand-edit the `.kicad_sch` file; regenerate it instead
-- PCB layout is in `.kicad_pcb`; project settings in `.kicad_pro`
-
-### Schematic Generator (`gen_sch.py`)
-`gen_sch.py` produces the full KiCad schematic as a `.kicad_sch` s-expression file. Its structure:
-
-1. **Pin position tables** — symbol-coordinate pin offsets for every component type (R, C, L, NMOS, NPN, PIC, MPU-6050, etc.), using the KiCad Y-inversion convention (`abs_y = cy - rpy`)
-2. **`COMPS` list** — each entry is `(lib_id, ref, value, cx, cy, angle, pin_map, footprint)` defining absolute placement
-3. **`NETS` dict** — connectivity as `{net_name: [(ref, pin), ...]}` — this is the authoritative netlist
-4. **`NC` list** — explicitly no-connect pins
-5. **`lib_symbols()`** — inline KiCad symbol definitions (geometry + pins) for all used parts
-6. **`build_schematic()`** — assembles the s-expression file from the above
-
-To regenerate the schematic after changes:
-```bash
-cd hardware/paracaidas-matrice400
-python gen_sch.py
-```
+- The KiCad project will live in `hardware/paracaidas-matrice400/` and is **hand-authored by the user** directly in the KiCad GUI (KiCad 7+) — there is no code-generation step. The previous `gen_sch.py` generator has been removed.
+- The **authoritative design spec and netlist** is [docs/esquematicos/esquematico.md](docs/esquematicos/esquematico.md): full component table, ASCII schematic, pin-by-pin netlist, oscillator config, and design notes. Treat that document as the source of truth for connectivity.
+- The `.kicad_sch` / `.kicad_pcb` / `.kicad_pro` files are not yet in the repo — the user is creating them. Do **not** generate or hand-write `.kicad_sch` s-expressions; if a design change is needed, update `docs/esquematicos/esquematico.md` and describe the change so the user can apply it in KiCad.
 
 ### System Blocks
 
@@ -66,9 +50,9 @@ python gen_sch.py
 
 ## Working with the KiCad Schematic
 
-- **To view/edit**: open `paracaidas-matrice400.kicad_sch` in KiCad 7+
-- **To modify connectivity or placement**: edit `gen_sch.py` (COMPS, NETS, or pin tables), then regenerate
-- **Y-axis convention**: KiCad schematic uses screen-Y-down; symbols use math-Y-up. The generator handles this with `abs_y = cy - rpy`
+- **Design authoring is done by the user** in the KiCad GUI. Claude does not create or edit `.kicad_sch` / `.kicad_pcb` files.
+- **Source of truth**: [docs/esquematicos/esquematico.md](docs/esquematicos/esquematico.md). To propose a connectivity or component change, edit that document (component table, netlist, design notes) and clearly describe the delta so the user can mirror it in KiCad. Keep that doc and this file consistent.
+- The `kicad` skill can still be used to **analyze/review** KiCad files once the user has added them to `hardware/paracaidas-matrice400/`.
 - **5V output voltage**: set by `Vout = 0.6 × (1 + R_FB1/R_FB2)` = 0.6 × 8.5 = **5.1V**
 
 ## Firmware (not yet implemented)
