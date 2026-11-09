@@ -156,7 +156,7 @@ module tapa() {
                 translate([0, 0, -1]) cylinder(d = tubo_di - 5, h = 10);
             }
             // nudillo central de la bisagra
-            hull() { eje_y(bis, 4, 9); caja_xyz([bis[0], -r_t + 2], [-4.5, 4.5], [zt, zt + 3]); }
+            hull() { eje_y(bis, 4, 9); caja_xyz([bis[0], -53], [-4.5, 4.5], [zt, zt + 3]); }   // no baja de zt dentro de r_t
             // pestaña del pestillo con ventana
             caja_xyz([r_t + 0.3, r_t + 3.3], [-8, 8], [zt - 45, zt + 3]);
         }
@@ -241,15 +241,15 @@ module caja() {
         let(p = pcb_xy([60, 34])) translate([p[0], p[1], caja_pared + caja_sep + 4]) rotate([0, 90, 0]) cylinder(d = 5, h = 20);
     }
     // separadores del PCB
-    for (h = pcb_agujeros) let(p = pcb_xy(h)) translate([p[0], p[1], caja_pared]) difference() {
-        cylinder(d = 6, h = caja_sep, $fn = 32);
+    for (h = pcb_agujeros) let(p = pcb_xy(h)) translate([p[0], p[1], caja_pared - 0.5]) difference() {
+        cylinder(d = 6, h = caja_sep + 0.5, $fn = 32);
         cylinder(d = 2.5, h = caja_sep + 1, $fn = 24);   // M3 autorroscante
     }
     // tope de la batería
-    translate([caja_c[0] - caja_int[0]/2, caja_c[1] - caja_int[1]/2 + 40, caja_pared]) cube([caja_int[0], 1.5, 8]);
+    translate([caja_c[0] - caja_int[0]/2, caja_c[1] - caja_int[1]/2 + 40, caja_pared - 0.5]) cube([caja_int[0], 1.5, 8.5]);
     // tetones para los tornillos de la tapa
-    for (sx = [-1, 1], sy = [-1, 1]) translate([caja_c[0] + sx*(caja_int[0]/2 - 3), caja_c[1] + sy*(caja_int[1]/2 - 3), caja_pared])
-        difference() { cylinder(d = 6, h = caja_int[2], $fn = 32); cylinder(d = 2.5, h = caja_int[2] + 1, $fn = 24); }
+    for (sx = [-1, 1], sy = [-1, 1]) translate([caja_c[0] + sx*(caja_int[0]/2 - 2.5), caja_c[1] + sy*(caja_int[1]/2 - 2.5), caja_pared - 0.5])
+        difference() { cylinder(d = 6, h = caja_int[2] + 0.5, $fn = 32); cylinder(d = 2.5, h = caja_int[2] + 1, $fn = 24); }
 }
 
 module tapa_caja() {
@@ -257,7 +257,7 @@ module tapa_caja() {
     z0 = e[2];
     difference() {
         translate([caja_c[0] - e[0]/2, caja_c[1] - e[1]/2, z0]) cube([e[0], e[1], 2]);
-        for (sx = [-1, 1], sy = [-1, 1]) translate([caja_c[0] + sx*(caja_int[0]/2 - 3), caja_c[1] + sy*(caja_int[1]/2 - 3), z0 - 5]) cylinder(d = 3.4, h = 10, $fn = 24);
+        for (sx = [-1, 1], sy = [-1, 1]) translate([caja_c[0] + sx*(caja_int[0]/2 - 2.5), caja_c[1] + sy*(caja_int[1]/2 - 2.5), z0 - 5]) cylinder(d = 3.4, h = 10, $fn = 24);
         // LED1, LED2 (guías de luz Ø3), buzzer, reset SW2
         for (h = [[22, 23.5, 3], [22, 25.6, 3], [43.5, 34.2, 4], [20.5, 10.5, 3.5]]) let(p = pcb_xy(h))
             translate([p[0], p[1], z0 - 5]) cylinder(d = h[2], h = 10, $fn = 24);
