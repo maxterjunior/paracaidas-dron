@@ -8,6 +8,7 @@ Sistema autónomo que detecta la caída libre del dron con una IMU y despliega u
 | **MCU** | PIC18F25K22 (SSOP-28) con oscilador interno + PLL, 3.3 V |
 | **IMU** | BMI088 (acelerómetro ±24 g + giróscopo) soldado en la placa, I²C: acel. 0x18 / giro 0x68 |
 | **Actuador** | Solenoide 5 V que libera el pestillo de un tubo de muelle |
+| **Mecanismo** | Tubo Ø100 × 280 mm con tapa articulada, modelo paramétrico OpenSCAD y [visor 3D](https://claude.ai/artifact/HH7TuvKMzHhvBDsvPzRwz9) |
 | **Paracaídas** | Circular, ripstop nylon 30D, **Ø3.5 m**, 12 gajos, descenso ≤ 6 m/s a 16 kg |
 | **Alimentación** | LiPo 1S 1000 mAh → interruptor MOSFET → LDO 3.3 V (XC6206) + boost 5.1 V (MT3608) |
 
@@ -19,7 +20,8 @@ Sistema autónomo que detecta la caída libre del dron con una IMU y despliega u
 | Esquemático (KiCad 10, rev. v4, todo SMD) | ✅ Cableado, ERC limpio, campo LCSC en cada componente |
 | PCB 2 capas 60 × 40 mm | ✅ Ruteado, planos de GND, DRC limpio, archivos JLCPCB listos |
 | Firmware (MPLAB XC8) | 🚧 v0.1.0 escrita, sin compilar ni probar en hardware |
-| Mecánica (tubo de muelle, canopia) | ⏳ Pendiente |
+| Mecanismo (tubo de muelle) | 🚧 Modelo 3D y STL listos, sin interferencias; faltan medidas reales del solenoide y del montaje en el M400 |
+| Canopia | ⏳ Pendiente (comprar o coser, ver `modulos.md`) |
 
 ## Cómo funciona
 
@@ -33,7 +35,7 @@ LiPo 1S ─Q3/SW1─┬─► XC6206 3.3V ─► PIC18F25K22 ◄─I²C─► BM
 1. El PIC lee el BMI088 a 500 Hz y filtra las señales con IIR de primer orden (solo aritmética entera, el PIC18 no tiene FPU).
 2. Se **arma** solo en vuelo: cuando detecta la vibración de los motores durante 5 s. En tierra no dispara.
 3. Armado, despliega si se cumple cualquiera de estos criterios: **caída libre** (|a| < 0.3 g durante 100 ms), **giro descontrolado** (|ω| > 250 °/s durante 300 ms) o **inclinación** (> 70° durante 500 ms).
-4. Da dos pulsos de 300 ms al solenoide, que retira el pin del pestillo. El muelle expulsa el paracaídas en ~50–100 ms.
+4. Da dos pulsos de 300 ms al solenoide, que retrae el émbolo que bloquea la palanca del pestillo. La tapa se abre y el muelle expulsa el paracaídas en ~50–100 ms (ver [Mecanismo](#mecanismo)).
 5. El pestillo retiene **sin energía**. Un reset nunca despliega por sí solo (R2 mantiene Q1 apagado), pero si el PIC se reinicia *durante* un despliegue, lo repite al arrancar.
 
 Detalles en [`firmware/README.md`](firmware/README.md).
@@ -52,10 +54,14 @@ paracaidas-dron/
 │   ├── esquematicos/esquematico.md   # Fuente de verdad: componentes, netlist pin a pin, notas
 │   └── investigacion/modulos.md      # Selección de módulos, cálculo y construcción del paracaídas
 ├── hardware/
-│   └── paracaidas-matrice400/        # Proyecto KiCad 10 (.kicad_pro / .kicad_sch / .kicad_pcb)
-│       ├── paracaidas.kicad_sym      # Símbolo propio (BMI088 en modo I2C)
-│       ├── paracaidas.pretty/        # Footprint propio (buzzer MLT-9650)
-│       └── jlcpcb/                   # Gerbers, BOM y CPL para pedir la placa armada
+│   ├── paracaidas-matrice400/        # Proyecto KiCad 10 (.kicad_pro / .kicad_sch / .kicad_pcb)
+│   │   ├── paracaidas.kicad_sym      # Símbolo propio (BMI088 en modo I2C)
+│   │   ├── paracaidas.pretty/        # Footprint propio (buzzer MLT-9650)
+│   │   └── jlcpcb/                   # Gerbers, BOM y CPL para pedir la placa armada
+│   └── mecanismo/
+│       ├── mecanismo.scad            # Modelo paramétrico OpenSCAD (tubo, tapa, pestillo, caja, adaptador)
+│       ├── stl/                      # Piezas imprimibles exportadas
+│       └── visor/                    # Visor 3D (three.js) generado desde los STL
 ├── firmware/                         # PIC18F25K22, MPLAB XC8 (ver firmware/README.md)
 │   ├── src/                          # main, detector, configuración, placa
 │   ├── lib/                          # HAL (tick, I2C, UART, ADC) y driver BMI088
@@ -112,6 +118,54 @@ Netclasses del PCB: `Default` 0.2 mm con 0.15 mm de separación (paso fino del S
 3. Revisa la rotación de los componentes en el visor antes de confirmar. Todos los componentes, incluidos los conectores, los monta JLCPCB.
 
 Si cambias el PCB, vuelve a exportar gerbers, taladros y posiciones con `kicad-cli pcb export gerbers|drill|pos`.
+
+## Mecanismo
+
+Tubo de muelle montado sobre el dron con una placa adaptadora. **[Ver el modelo en 3D](https://claude.ai/artifact/HH7TuvKMzHhvBDsvPzRwz9)**: tiene animación del despliegue, vista en corte y el nombre de cada pieza al pasar el ratón.
+
+| Pieza | Qué hace | Material |
+|---|---|---|
+| Tubo Ø105/Ø100 × 280 mm | Aloja ~1.6 L de paracaídas plegado | PETG impreso o tubo PVC 110 mm |
+| Base | Encaje del tubo, asiento del resorte, paso central del cordón de anclaje | PETG |
+| Pistón | Empuja el paracaídas | PETG |
+| Resorte Ø90 mm | Comprimido a 45 mm en vuelo | Acero (comprado) |
+| Tapa articulada | Se abre sobre su bisagra y queda unida al tubo; su pestaña tiene la ventana del pestillo | PETG |
+| Collar | Bisagra, pivote de la palanca, guía del émbolo y repisa del solenoide | PETG |
+| Palanca del pestillo | Su gancho entra en la ventana de la tapa | PETG o PA |
+| Solenoide 5 V push-pull | El émbolo bloquea la palanca de costado | JF-0530B (comprado) |
+| Caja electrónica | PCB 60 × 40 + LiPo 1S; tapa con agujeros sobre LEDs, buzzer, reset, J1 y J2 | PETG |
+| Placa adaptadora | Une tubo y caja al dron | Aluminio 4 mm o PETG |
+
+**Cómo traba:** la carga del resorte pasa a 2.7 mm del pivote de la palanca, así que el émbolo solo la bloquea de costado y le basta un solenoide pequeño. Sin energía, el muelle del solenoide deja el émbolo extendido y la tapa trabada. La boca del tubo queda ~273 mm por encima del plano de las hélices.
+
+**Verificado con OpenSCAD:** ninguna pieza montada se cruza con otra. La tapa abre de 0° a 118° sin chocar, la palanca gira 22° libre con el émbolo retraído y queda bloqueada con el émbolo extendido.
+
+**Antes de fabricar hay que medir:**
+
+- El solenoide real (cuerpo, carrera, largo del émbolo): parámetros `sol_*`.
+- El punto de montaje superior del M400: el patrón de tornillos de la placa (`montaje_*`) y la envolvente del dron son provisionales.
+- La fuerza del resorte: debe sacar ~0.6 kg por encima de las hélices. Probar en banco.
+
+> El cordón de anclaje se ata a la **estructura del dron**, no a piezas impresas: el choque de apertura con 16 kg es de cientos de newtons.
+
+### Exportar las piezas
+
+Instala [OpenSCAD](https://openscad.org/downloads.html) y exporta cada pieza:
+
+```sh
+cd hardware/mecanismo
+openscad -D 'pieza="tapa"' -o stl/tapa.stl mecanismo.scad
+```
+
+Piezas imprimibles: `base`, `tubo`, `piston`, `tapa`, `collar`, `palanca`, `caja`, `tapa_caja`, `adaptador`. Las medidas están como parámetros al inicio del `.scad`. Los STL salen en posición de montaje, así que hay que orientarlos en el slicer. El tubo necesita ~290 mm de altura de impresión; si no alcanza, usa PVC.
+
+### Visor 3D
+
+`hardware/mecanismo/visor/index.html` se abre con doble clic, sin servidor. Carga las piezas de `piezas.js`, que contiene los STL de OpenSCAD en base64. Si cambias el `.scad`, regenera ese archivo:
+
+```sh
+python hardware/mecanismo/visor/empaquetar.py "C:/Program Files/OpenSCAD/openscad.com"
+```
 
 ## Paracaídas
 
