@@ -1,0 +1,4 @@
+(sym_lib_table
+  (version 7)
+  (lib (name "paracaidas")(type "KiCad")(uri "${KIPRJMOD}/paracaidas.kicad_sym")(options "")(descr "Símbolos propios del proyecto"))
+)

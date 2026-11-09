@@ -6,7 +6,7 @@
 - **Masa de diseño del paracaídas:** 16 kg (MTOW + ~0.3 kg del propio sistema)
 - **Detección:** Caída libre via IMU/acelerómetro (+ giroscopio, pendiente; ver Notas de Diseño)
 - **Despliegue:** Mecanismo de resorte (spring-loaded)
-- **MCU:** PIC18LF25K22 (disponible)
+- **MCU:** PIC18F25K22 SSOP-28 (v4: el PIC18LF25K22 SMD no tiene stock en JLCPCB; mismo chip con rango 2.3–5.5V)
 - **Sistema:** Independiente del Flight Controller
 
 ---
@@ -66,7 +66,7 @@
 |---------------|------------------------------------------|-------|
 | MOSFET N AO3400A | Switching solenoid desde pin PIC 3.3V (Rds(on) especificada a Vgs 2.5V) | ~$0.1 |
 | ~~IRLZ44N~~ | Descartado: Rds(on) especificada a Vgs 4–5V, no garantiza conducción plena a 3.3V | — |
-| Diodo 1N4007  | Flyback — protección contra pico solenoid | ~$0.1 |
+| Diodo SS34    | Flyback — protección contra pico solenoid | ~$0.04 |
 | Diodo SS34    | Schottky de salida del boost MT3608 (obligatorio) | ~$0.1 |
 | Resistor 10kΩ | Pull-down gate MOSFET                    | ~$0.01|
 
@@ -80,7 +80,7 @@
 | **LiPo 1S 1000mAh** | 1000 mAh | 3.7V  | ~23g   | ~8–12 h                     |
 | LiPo 2S 500mAh    | 500 mAh   | 7.4V    | ~25g   | ~4–6 h                      |
 
-Con regulador 3.3V (LDO tipo MCP1700) para el PIC y la IMU.
+Con regulador 3.3V (LDO XC6206) para el PIC y la IMU. Un MOSFET P (AO3401A) hace de interruptor de encendido: el deslizante SMD solo soporta ~50 mA y maneja su puerta.
 
 > La autonomía en standby supone el solenoide **apagado** durante el vuelo (lógica de liberación por pulso, ver abajo). Si el solenoide tuviera que estar energizado para retener (~3 W desde la LiPo vía boost), la batería de 1000 mAh no llegaría a 1 h.
 
@@ -90,13 +90,13 @@ Con regulador 3.3V (LDO tipo MCP1700) para el PIC y la IMU.
 
 | Módulo            | Componente          | Motivo de selección                              |
 |-------------------|---------------------|--------------------------------------------------|
-| **MCU**           | PIC18LF25K22        | Disponible, 3.3V nativo, 2x MSSP, 16 MIPS       |
-| **IMU**           | MPU-6050 (GY-521)   | Económico, suficiente, fácil de conseguir        |
+| **MCU**           | PIC18F25K22-I/SS    | Mismo chip que el LF en mano, SMD con stock JLCPCB, 2x MSSP, 16 MIPS |
+| **IMU**           | BMI088              | Diseñado para drones, ±24 g, tolera vibración; MPU-6050 discontinuado (~US$21 en JLCPCB) |
 | **Actuador**      | Solenoid 5V         | Rápido (<50ms), simple, reversible               |
 | **Driver**        | MOSFET AO3400A      | Logic-level especificado a Vgs 2.5V              |
-| **Regulador**     | MCP1700-3302E       | LDO 3.3V, hasta 250mA, muy bajo quiescent current|
+| **Regulador**     | XC6206P332MR        | LDO 3.3V 200 mA, componente básico de JLCPCB     |
 | **Batería**       | LiPo 1S 1000mAh     | Ligera, suficiente autonomía para vuelo          |
-| **Protección**    | Diodo 1N4007        | Flyback del solenoid                             |
+| **Protección**    | Diodo SS34          | Flyback del solenoid (mismo componente que D4)   |
 | **Boost 5V**      | MT3608 + SS34 + 22µH | VBAT → 5.1V para solenoide y buzzer             |
 
 ---

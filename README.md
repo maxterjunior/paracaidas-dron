@@ -5,29 +5,29 @@ Sistema autónomo que detecta la caída libre del dron con una IMU y despliega u
 | | |
 |---|---|
 | **Dron objetivo** | DJI Matrice 400: 9.74 kg con baterías, MTOW 15.8 kg |
-| **MCU** | PIC18LF25K22 @ 64 MHz (oscilador interno + PLL), 3.3 V |
-| **IMU** | MPU-6050 (módulo GY-521) por I²C, dirección 0x68 |
+| **MCU** | PIC18F25K22 (SSOP-28) con oscilador interno + PLL, 3.3 V |
+| **IMU** | BMI088 (acelerómetro ±24 g + giróscopo) soldado en la placa, I²C: acel. 0x18 / giro 0x68 |
 | **Actuador** | Solenoide 5 V que libera el pestillo de un tubo de muelle |
 | **Paracaídas** | Circular, ripstop nylon 30D, **Ø3.5 m**, 12 gajos, descenso ≤ 6 m/s a 16 kg |
-| **Alimentación** | LiPo 1S 1000 mAh → LDO 3.3 V (MCP1700) + boost 5.1 V (MT3608) |
+| **Alimentación** | LiPo 1S 1000 mAh → interruptor MOSFET → LDO 3.3 V (XC6206) + boost 5.1 V (MT3608) |
 
 ## Estado
 
 | Área | Estado |
 |---|---|
 | Investigación de módulos y paracaídas | ✅ Completa |
-| Esquemático (KiCad 10, rev. v3) | ✅ Cableado, ERC limpio |
-| PCB 2 capas 90 × 62 mm | ✅ Ruteado, planos de GND, DRC limpio |
+| Esquemático (KiCad 10, rev. v4, todo SMD) | ✅ Cableado, ERC limpio, campo LCSC en cada componente |
+| PCB 2 capas 60 × 40 mm | ✅ Ruteado, planos de GND, DRC limpio, archivos JLCPCB listos |
 | Firmware (MPLAB XC8) | ⏳ Pendiente |
 | Mecánica (tubo de muelle, canopia) | ⏳ Pendiente |
 
 ## Cómo funciona
 
 ```
-LiPo 1S ─SW1─┬─► MCP1700 3.3V ─► PIC18LF25K22 ◄─I²C─► MPU-6050 (GY-521)
-             │                        │
-             └─► MT3608 5.1V ─────────┼─► AO3400A ─► Solenoide ─► pestillo ─► muelle ─► paracaídas
-                                      └─► LEDs / buzzer
+LiPo 1S ─Q3/SW1─┬─► XC6206 3.3V ─► PIC18F25K22 ◄─I²C─► BMI088
+                │                       │
+                └─► MT3608 5.1V ────────┼─► AO3400A ─► Solenoide ─► pestillo ─► muelle ─► paracaídas
+                                        └─► LEDs / buzzer
 ```
 
 1. El PIC lee el acelerómetro y filtra la vibración de los motores con un IIR de primer orden (solo aritmética entera, el PIC18 no tiene FPU).
@@ -38,7 +38,7 @@ LiPo 1S ─SW1─┬─► MCP1700 3.3V ─► PIC18LF25K22 ◄─I²C─► MPU
 ### Limitaciones conocidas
 
 - **Altura mínima de despliegue: ~20–40 m.** Entre detección, expulsión e inflado se pierden 1.5–2.5 s.
-- **La caída libre sola no basta.** Si falla un motor, el dron gira con los demás empujando y el acelerómetro no ve 0 g. Falta añadir un criterio con giroscopio (inclinación o velocidad angular anormal) y un disparo manual por radio.
+- **La caída libre sola no basta.** Si falla un motor, el dron gira con los demás empujando y el acelerómetro no ve 0 g. El firmware debe añadir un criterio con el giróscopo del BMI088 (inclinación o velocidad angular anormal) y un disparo manual por radio (RB2 libre).
 - **No corta los motores.** El tubo debe expulsar hacia arriba, fuera del plano de las hélices.
 
 ## Estructura del repositorio
@@ -50,6 +50,9 @@ paracaidas-dron/
 │   └── investigacion/modulos.md      # Selección de módulos, cálculo y construcción del paracaídas
 ├── hardware/
 │   └── paracaidas-matrice400/        # Proyecto KiCad 10 (.kicad_pro / .kicad_sch / .kicad_pcb)
+│       ├── paracaidas.kicad_sym      # Símbolo propio (BMI088 en modo I2C)
+│       ├── paracaidas.pretty/        # Footprint propio (buzzer MLT-9650)
+│       └── jlcpcb/                   # Gerbers, BOM y CPL para pedir la placa armada
 ├── CLAUDE.md                         # Guía para Claude Code
 └── README.md
 ```
@@ -89,7 +92,15 @@ Para cualquier cambio de conexiones:
 2. Actualiza el PCB desde el esquemático (F8) y vuelve a rutear las redes afectadas.
 3. Rellena las zonas (B) y corre el DRC con `--schematic-parity`.
 
-Netclasses del PCB: `Default` 0.3 mm y `Power` 0.6 mm (GND, +5V, VBAT, SW_NODE, SOL_DRV, BAT+).
+Netclasses del PCB: `Default` 0.2 mm con 0.15 mm de separación (paso fino del SSOP-28 y del LGA-16) y `Power` 0.6 mm (+5V, VBAT, SW_NODE, SOL_DRV, BAT+). GND va por plano de cobre en ambas caras.
+
+### Pedir la placa a JLCPCB
+
+1. Comprime `hardware/paracaidas-matrice400/jlcpcb/gerbers/` en un .zip y súbelo.
+2. En PCB Assembly sube `bom_jlcpcb.csv` y `cpl_jlcpcb.csv` (cara superior).
+3. Revisa la rotación de los componentes en el visor antes de confirmar. J1 (UART) y J2 (ICSP) se sueldan a mano.
+
+Si cambias el PCB, vuelve a exportar gerbers, taladros y posiciones con `kicad-cli pcb export gerbers|drill|pos`.
 
 ## Paracaídas
 
