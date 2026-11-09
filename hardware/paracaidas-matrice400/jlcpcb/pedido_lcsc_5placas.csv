@@ -1,4 +1,4 @@
-LCSC Part #,Cantidad,Comentario,Designadores,Por placa
+LCSC Part Number,Quantity,Description,Designator,Qty per Board
 C51680,6,PIC18F25K22-I/SS,U1,1
 C194919,7,BMI088,U2,1
 C5446,6,XC6206P332MR,U3,1
