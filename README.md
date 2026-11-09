@@ -18,7 +18,7 @@ Sistema autónomo que detecta la caída libre del dron con una IMU y despliega u
 | Investigación de módulos y paracaídas | ✅ Completa |
 | Esquemático (KiCad 10, rev. v4, todo SMD) | ✅ Cableado, ERC limpio, campo LCSC en cada componente |
 | PCB 2 capas 60 × 40 mm | ✅ Ruteado, planos de GND, DRC limpio, archivos JLCPCB listos |
-| Firmware (MPLAB XC8) | ⏳ Pendiente |
+| Firmware (MPLAB XC8) | 🚧 v0.1.0 escrita, sin compilar ni probar en hardware |
 | Mecánica (tubo de muelle, canopia) | ⏳ Pendiente |
 
 ## Cómo funciona
@@ -30,15 +30,18 @@ LiPo 1S ─Q3/SW1─┬─► XC6206 3.3V ─► PIC18F25K22 ◄─I²C─► BM
                                         └─► LEDs / buzzer
 ```
 
-1. El PIC lee el acelerómetro y filtra la vibración de los motores con un IIR de primer orden (solo aritmética entera, el PIC18 no tiene FPU).
-2. Si `|a| = √(ax² + ay² + az²) < 0.3 g` durante más de 100 ms, considera que el dron está en caída libre.
-3. Da un pulso de ~300 ms al solenoide, que retira el pin del pestillo. El muelle expulsa el paracaídas en ~50–100 ms.
-4. El pestillo retiene **sin energía**. Un reset o un brown-out nunca despliega el paracaídas (R2 mantiene Q1 apagado).
+1. El PIC lee el BMI088 a 500 Hz y filtra las señales con IIR de primer orden (solo aritmética entera, el PIC18 no tiene FPU).
+2. Se **arma** solo en vuelo: cuando detecta la vibración de los motores durante 5 s. En tierra no dispara.
+3. Armado, despliega si se cumple cualquiera de estos criterios: **caída libre** (|a| < 0.3 g durante 100 ms), **giro descontrolado** (|ω| > 250 °/s durante 300 ms) o **inclinación** (> 70° durante 500 ms).
+4. Da dos pulsos de 300 ms al solenoide, que retira el pin del pestillo. El muelle expulsa el paracaídas en ~50–100 ms.
+5. El pestillo retiene **sin energía**. Un reset nunca despliega por sí solo (R2 mantiene Q1 apagado), pero si el PIC se reinicia *durante* un despliegue, lo repite al arrancar.
+
+Detalles en [`firmware/README.md`](firmware/README.md).
 
 ### Limitaciones conocidas
 
 - **Altura mínima de despliegue: ~20–40 m.** Entre detección, expulsión e inflado se pierden 1.5–2.5 s.
-- **La caída libre sola no basta.** Si falla un motor, el dron gira con los demás empujando y el acelerómetro no ve 0 g. El firmware debe añadir un criterio con el giróscopo del BMI088 (inclinación o velocidad angular anormal) y un disparo manual por radio (RB2 libre).
+- **La caída libre sola no basta.** Si falla un motor, el dron gira con los demás empujando y el acelerómetro no ve 0 g. Por eso el firmware también dispara por giro e inclinación. Falta un disparo manual por radio (RB2 libre) y calibrar los umbrales con vuelos reales.
 - **No corta los motores.** El tubo debe expulsar hacia arriba, fuera del plano de las hélices.
 
 ## Estructura del repositorio
@@ -53,11 +56,13 @@ paracaidas-dron/
 │       ├── paracaidas.kicad_sym      # Símbolo propio (BMI088 en modo I2C)
 │       ├── paracaidas.pretty/        # Footprint propio (buzzer MLT-9650)
 │       └── jlcpcb/                   # Gerbers, BOM y CPL para pedir la placa armada
+├── firmware/                         # PIC18F25K22, MPLAB XC8 (ver firmware/README.md)
+│   ├── src/                          # main, detector, configuración, placa
+│   ├── lib/                          # HAL (tick, I2C, UART, ADC) y driver BMI088
+│   └── test/                         # pruebas de la lógica de detección en la PC
 ├── CLAUDE.md                         # Guía para Claude Code
 └── README.md
 ```
-
-El firmware irá en `firmware/src/` (código) y `firmware/lib/` (librerías) cuando se implemente.
 
 ## Primeros pasos
 
@@ -76,11 +81,17 @@ cd hardware/paracaidas-matrice400
 "$KICAD" pcb drc --schematic-parity paracaidas-matrice400.kicad_pcb
 ```
 
-### Firmware (cuando exista)
+### Firmware
 
-- Toolchain: MPLAB X + XC8, programado con PICkit por el header ICSP **J2** (RB6/RB7).
-- Depuración serie por el header UART **J1** (RC6 TX / RC7 RX).
-- Bits de configuración base: `FOSC = INTIO67`, `PLLCFG = ON`, `MCLRE = EXTMCLR`, `LVP = OFF`, `WDTEN = OFF` (activar el WDT en producción).
+```sh
+cd firmware
+make          # build/paracaidas.hex (MPLAB XC8)
+make test     # lógica de detección en la PC (gcc)
+```
+
+- Programado con PICkit por el header ICSP **J2** (RB6/RB7).
+- Log de estado por el header UART **J1** (RC6 TX / RC7 RX), 115200 8N1.
+- Instrucciones, estados, LEDs y calibración en [`firmware/README.md`](firmware/README.md).
 
 ## Cambiar el diseño
 

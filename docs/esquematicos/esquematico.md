@@ -218,20 +218,16 @@ Topología boost estándar: **L1 entre VBAT y SW; Schottky D4 de SW (ánodo) a +
 
 ## Configuración Oscilador PIC
 
-Oscilador interno **HFINTOSC 16 MHz + PLL x4 = 64 MHz**. Sin cristal externo.
+Oscilador interno **HFINTOSC 16 MHz, sin PLL** (4 MIPS). Sin cristal externo. Alcanza para leer el IMU a 500 Hz y evita depender de la frecuencia máxima del PIC18F a 3.3V. Bits completos en `firmware/src/config_bits.c`:
 
 ```c
-// MPLAB XC8 — Configuration bits PIC18F25K22
-#pragma config FOSC    = INTIO67   // Oscilador interno, RA6/RA7 como GPIO
-#pragma config PLLCFG  = ON        // PLL x4 → 64 MHz (verificar Fmax a 3.3V en el datasheet)
-#pragma config PRICLKEN = ON
-#pragma config FCMEN   = OFF
-#pragma config IESO    = OFF
-#pragma config PWRTEN  = ON        // Power-up timer ON
-#pragma config BOREN   = ON        // Brown-out reset ON
-#pragma config WDTEN   = OFF       // Watchdog OFF (habilitar en producción)
-#pragma config MCLRE   = EXTMCLR  // MCLR pin habilitado (SW2 reset)
-#pragma config LVP     = OFF       // Low voltage programming OFF
+// MPLAB XC8 — Configuration bits PIC18F25K22 (extracto)
+#pragma config FOSC = INTIO67, PLLCFG = OFF      // Oscilador interno 16 MHz, RA6/RA7 como GPIO
+#pragma config PWRTEN = ON                       // Power-up timer
+#pragma config BOREN = SBORDIS, BORV = 250       // Brown-out a 2.5 V
+#pragma config WDTEN = SWON, WDTPS = 256         // Watchdog ~1 s, se activa en main
+#pragma config PBADEN = OFF, MCLRE = EXTMCLR     // PORTB digital, MCLR habilitado (SW2)
+#pragma config LVP = OFF, XINST = OFF
 ```
 
 ---
@@ -288,7 +284,7 @@ Archivos en `hardware/paracaidas-matrice400/jlcpcb/`:
 **Otras:**
 
 - Cargador LiPo (TP4056) o carga externa
-- Firmware (aún no implementado) — usar los registros del BMI088
+- Firmware v0.1.0 en `firmware/`: compilar con XC8, probar en la placa y calibrar umbrales con vuelos reales
 
 ---
 

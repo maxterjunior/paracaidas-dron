@@ -38,20 +38,16 @@ Emergency parachute deployment system for the DJI Matrice 400 drone (9.74 kg wit
 - Sources: Fruity Chutes, Mars Parachutes (models rated for 15–16 kg)
 - Details in `docs/investigacion/modulos.md`
 
-### Free-fall Detection Logic
-- Threshold: `|√(ax²+ay²+az²)| < 0.3g` sustained for >100 ms
-- Integer math only (PIC18 has no FPU)
-- First-order IIR filter to reject motor vibration
-- BMI088 I2C addresses: accelerometer 0x18, gyroscope 0x68. Add a gyro-based criterion (tilt / abnormal angular rate) and a manual RC trigger (free pin RB2/INT2).
+### Detection Logic (firmware/src/detector.c)
+- Only fires when ARMED. Armed = motor vibration (high-frequency accel content) ≥ `VIB_ARM_MG` for 5 s; disarms after 10 s without vibration. Never arms in the first 10 s.
+- Criteria (any): free fall `|a| < 300 mg` for 100 ms; tumble `|ω| > 250 °/s` for 300 ms; tilt > 70° from the up axis (or inverted) for 500 ms.
+- Integer math only (PIC18 has no FPU); first-order IIR filters; 500 Hz sampling.
+- BMI088 I2C addresses: accelerometer 0x18 (±12 g), gyroscope 0x68 (±1000 °/s). Thresholds live in `firmware/src/app_config.h`; those marked AJUSTAR must be calibrated with real flight logs.
+- Still missing: manual RC trigger (free pin RB2/INT2).
 
-### PIC18F25K22 Configuration Bits
-```c
-#pragma config FOSC    = INTIO67   // Internal oscillator, RA6/RA7 as GPIO
-#pragma config PLLCFG  = ON        // PLL x4 → 64 MHz (check the F part's Fmax at 3.3V in the datasheet)
-#pragma config MCLRE   = EXTMCLR  // MCLR pin enabled (SW2 reset)
-#pragma config LVP     = OFF
-#pragma config WDTEN   = OFF       // Enable in production
-```
+### PIC18F25K22 Configuration Bits (firmware/src/config_bits.c)
+- `FOSC = INTIO67`, `PLLCFG = OFF`: internal 16 MHz, **no PLL** (avoids depending on the F part's Fmax at 3.3 V).
+- `BOREN = SBORDIS`, `BORV = 250`; `WDTEN = SWON` (enabled in `main`, ~1 s); `MCLRE = EXTMCLR`; `LVP = OFF`; `PBADEN = OFF`.
 
 ## Working with the KiCad Schematic
 
@@ -59,5 +55,9 @@ Emergency parachute deployment system for the DJI Matrice 400 drone (9.74 kg wit
 - After any schematic/PCB change, verify with `kicad-cli` (netlist export, ERC, DRC with `--schematic-parity`) (`kicad-cli` is at `C:/Program Files/KiCad/10.0/bin/kicad-cli.exe`).
 - **5V output voltage**: set by `Vout = 0.6 × (1 + R8/R9)` = 0.6 × 8.5 = **5.1V**
 
-## Firmware (not yet implemented)
-Firmware will target PIC18F25K22, compiled with MPLAB XC8. Source goes in `firmware/src/`, libraries in `firmware/lib/`.
+## Firmware
+- v0.1.0 in `firmware/` (PIC18F25K22, MPLAB XC8, C99). **Not compiled or tested on hardware yet** (no XC8/gcc on this machine); the detector logic was checked with a Python port of the same test cases. See `firmware/README.md`.
+- `src/`: `main.c` (state machine FALLA/DESARMADO/ARMADO/DESPLEGADO, solenoid pulses, LEDs/buzzer, UART log), `detector.c` (pure C, host-testable), `app_config.h` (thresholds), `board.c/.h` (pin map), `config_bits.c`.
+- `lib/hal/`: Timer2 1 ms tick, MSSP1 I2C with timeouts and bus recovery, EUSART1 115200 (`putch` for printf), ADC with FVR 2.048 V for VBAT. `lib/bmi088/`: driver.
+- `__persistent` variables: a reset during the solenoid pulse re-fires on boot; a reset while ARMED returns straight to ARMED.
+- Build: `make` (xc8-cc), `make BENCH=1` (UART bench commands ARM/DISARM/FIRE — never fly it), `make test` (gcc).
