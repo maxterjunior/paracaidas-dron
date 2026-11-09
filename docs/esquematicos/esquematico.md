@@ -1,7 +1,7 @@
 # Esquemático — Sistema Paracaídas para DJI Matrice 400
 
-Revisión **v3**. Archivo KiCad: `hardware/paracaidas-matrice400/paracaidas-matrice400.kicad_sch`
-(las referencias de este documento coinciden 1:1 con las del esquemático).
+Revisión **v3**. Archivos KiCad: `hardware/paracaidas-matrice400/paracaidas-matrice400.kicad_sch` (cableado) y `.kicad_pcb`
+(las referencias de este documento coinciden 1:1 con las del esquemático y el PCB).
 
 ## Componentes
 
@@ -12,7 +12,7 @@ Revisión **v3**. Archivo KiCad: `hardware/paracaidas-matrice400/paracaidas-matr
 | U3 | MCP1700T-3302E/TT | LDO 3.3V, 250 mA | SOT-23 |
 | U4 | MT3608 | Step-up boost VBAT → 5V | SOT-23-6 |
 | Q1 | AO3400A | MOSFET N logic-level, driver solenoide (Rds(on) ≤ 48 mΩ @ Vgs 2.5V) | SOT-23 |
-| Q2 | 2N3904 | NPN driver buzzer | TO-92 |
+| Q2 | 2N3904 | NPN driver buzzer | TO-92 Inline Wide (paso 2.54) |
 | D1 | 1N4007 | Flyback solenoide | DO-41 |
 | D4 | SS34 | Schottky de salida del MT3608 (40V 3A) | SMA |
 | BT1 | LiPo 1S 1000mAh | Batería 3.7V (conector JST-PH 2 pines) | JST PH 2P |
@@ -29,8 +29,6 @@ Revisión **v3**. Archivo KiCad: `hardware/paracaidas-matrice400/paracaidas-matr
 | R2 | 10kΩ | Pull-down gate Q1 | |
 | R3 | 330Ω | LED1 | |
 | R4 | 330Ω | LED2 | |
-| R5 | 4.7kΩ | Pull-up SCL (**DNP** si el GY-521 ya trae pull-ups) | |
-| R6 | 4.7kΩ | Pull-up SDA (**DNP** si el GY-521 ya trae pull-ups) | |
 | R7 | 1kΩ | Base Q2 | |
 | R8 | 750kΩ 1% | Feedback MT3608, parte alta (antes R_FB1) | |
 | R9 | 100kΩ 1% | Feedback MT3608, parte baja (antes R_FB2) | |
@@ -96,8 +94,8 @@ MCU / IMU
    LED2: RA1 (3)  ── R4 330Ω ── LED2 rojo  ── GND
    BZ:   RC0 (11) ── R7 1kΩ ── Base Q2
    SOL:  RC2 (13) ── Gate Q1 (+ R2 10k a GND)
-   SCL:  RC3 (14) ── J3.3 (+ R5 4.7k a +3V3, DNP)
-   SDA:  RC4 (15) ── J3.4 (+ R6 4.7k a +3V3, DNP)
+   SCL:  RC3 (14) ── J3.3   (pull-up 4.7k en el GY-521)
+   SDA:  RC4 (15) ── J3.4   (pull-up 4.7k en el GY-521)
    TX:   RC6 (17) ── J1.2
    RX:   RC7 (18) ── J1.3
    INT:  RB0 (21) ── J3.8
@@ -124,7 +122,7 @@ ACTUADORES
 | SW_NODE | U4.SW(1), L1.2, D4.A |
 | +5V | D4.K, C4, R8, D1.K, J4.1, BZ1(+) |
 | FB | U4.FB(3), R8, R9 |
-| +3V3 | U3.VO(2), C2, U1.VDD(20), C1, R1, R5, R6, J3.1 (VCC), C3, J2.2 |
+| +3V3 | U3.VO(2), C2, U1.VDD(20), C1, R1, J3.1 (VCC), C3, J2.2 |
 | GND | BT1(−), U3.GND, U4.GND, C1–C6, R2, R9, U1.VSS(8,19), SW2.2, LED1.K, LED2.K, Q1.S, Q2.E, J1.1, J2.3, J3.2, J3.7 (AD0) |
 | MCLR | U1.1, R1, SW2.1, J2.1 |
 | LED_G / LED_G_A | U1.RA0(2) – R3 – LED1.A |
@@ -133,8 +131,8 @@ ACTUADORES
 | BZ_DRV | Q2.C, BZ1(−) |
 | SOL_GATE | U1.RC2(13), Q1.G, R2 |
 | SOL_DRV | Q1.D, D1.A, J4.2 |
-| SCL | U1.RC3(14), J3.3, R5 |
-| SDA | U1.RC4(15), J3.4, R6 |
+| SCL | U1.RC3(14), J3.3 |
+| SDA | U1.RC4(15), J3.4 |
 | IMU_INT | U1.RB0(21), J3.8 |
 | UART_TX | U1.RC6(17), J1.2 (→ RX del adaptador USB-UART) |
 | UART_RX | U1.RC7(18), J1.3 (← TX del adaptador USB-UART) |
@@ -156,7 +154,7 @@ Sin conectar (no-connect): U1 pines 4–7, 9, 10, 12, 16, 22–26 · U4.NC(6) ·
 | 7 | AD0 | GND → dirección 0x68 |
 | 8 | INT | RB0/INT0 |
 
-> El GY-521 trae su propio LDO (662K) y pull-ups de 4.7kΩ. Alimentado con 3.3V el MPU-6050 queda en ~3.1V (rango válido 2.375–3.46V). Con las pull-ups del módulo, R5/R6 se montan solo si el módulo no las tiene.
+> El GY-521 trae su propio LDO (662K) y pull-ups de 4.7kΩ en SCL/SDA, por eso la placa no lleva pull-ups propias (R5/R6 eliminadas). Alimentado con 3.3V el MPU-6050 queda en ~3.1V (rango válido 2.375–3.46V). Si se usa un módulo sin pull-ups, agregar 4.7kΩ a +3V3 en SCL y SDA.
 
 ### J2 — ICSP (pinout PICkit)
 
@@ -223,7 +221,7 @@ Oscilador interno **HFINTOSC 16 MHz + PLL x4 = 64 MHz**. Sin cristal externo.
 ## Notas de Diseño
 
 1. **Oscilador interno** — sin cristal externo, RA6/RA7 quedan libres como GPIO
-2. **I2C Fast Mode** — pull-ups 4.7kΩ a 3.3V correctas para 400 kHz (no duplicar con las del GY-521)
+2. **I2C Fast Mode** — pull-ups 4.7kΩ del GY-521 a 3.3V, correctas para 400 kHz
 3. **Flyback D1** — obligatorio, protege Q1 del pico inductivo del solenoide al apagar
 4. **Q1 AO3400A** — logic-level especificado a 2.5V; el pin del PIC a 3.3V lo enciende completamente
 5. **MT3608** — L1 22µH shielded con corriente de saturación ≥ 1.5A; D4 Schottky ≥ 2A; C5 22µF cerámico a la entrada (picos de corriente del solenoide)
@@ -232,6 +230,13 @@ Oscilador interno **HFINTOSC 16 MHz + PLL x4 = 64 MHz**. Sin cristal externo.
 8. **ICSP** — RB6/RB7 reservados para PICkit, no usar en la aplicación final
 9. **SW2** — solo para desarrollo, puede omitirse en producción
 10. **Dirección MPU-6050** — AD0 a GND = 0x68, a 3.3V = 0x69
+
+### PCB
+
+- 2 capas, 90 × 62 mm, 3 agujeros M3 (esquina sup. izq. ocupada por BT1).
+- Clases de red: **Default** pista 0.3 mm / vía 0.8-0.4 mm; **Power** (GND, VBAT, +5V, SW_NODE, SOL_DRV, BAT+) pista 0.6 mm (el paso de 0.95 mm del SOT-23-6 del MT3608 no admite 0.8 mm) / vía 1.0-0.5 mm.
+- El GY-521 se monta sobre J3 con header hembra; el área a la izquierda de J3 queda bajo el módulo (solo componentes bajos).
+- Estado: **ruteado** con Freerouting 2.1 (2 vías, sin violaciones) y plano de GND en F.Cu y B.Cu con alivios térmicos. DRC: 0 violaciones, 0 conexiones pendientes, 0 problemas de paridad con el esquemático. Si se mueven componentes, rellenar zonas (B) y repetir el DRC.
 
 ### Pendientes / mejoras futuras
 
@@ -256,6 +261,8 @@ Oscilador interno **HFINTOSC 16 MHz + PLL x4 = 64 MHz**. Sin cristal externo.
 | 7 | GY-521 representado como chip QFN | J3 header 1x08 con el pinout del módulo |
 | 8 | Esquemático KiCad con LEDs infrarrojos, PIC SOIC y SW2 DIP | LEDs visibles, PIC SPDIP, SW2 pulsador |
 | 9 | R_FB1/R_FB2 con nombres distintos a KiCad | Renombrados R8/R9 |
+| 10 | R5/R6 duplicaban las pull-ups del GY-521 | Eliminadas |
+| 11 | Esquemático solo con etiquetas, sin cables | Esquemático cableado con símbolos de alimentación |
 
 ### v1 → v2
 
