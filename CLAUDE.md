@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-Emergency parachute deployment system for the DJI Matrice 400 drone (~6.7 kg, MTOW ~11 kg). Detects free-fall via IMU and triggers a spring-loaded parachute mechanism. The system is **independent of the drone's flight controller**.
+Emergency parachute deployment system for the DJI Matrice 400 drone (9.74 kg with batteries, MTOW 15.8 kg). Detects free-fall via IMU and triggers a spring-loaded parachute mechanism. The system is **independent of the drone's flight controller**.
 
 ## Key Architecture
 
@@ -28,10 +28,11 @@ Emergency parachute deployment system for the DJI Matrice 400 drone (~6.7 kg, MT
 | Debug/Programming | J1 = UART (RC6/RC7), J2 = ICSP PICKit (RB6/RB7) | — |
 
 ### Parachute Canopy
-- Type: circular **Ripstop Nylon 30D sil-nylon**, **1.2–1.3 m diameter** (Cd ≈ 0.75, descent ≤6 m/s at 11 kg MTOW)
-- Sizing formula: `Area = (2·m·g) / (Cd·ρ·v²)` → ~0.82 m² minimum → 1.2 m with safety margin
+- Type: circular **Ripstop Nylon 30D sil-nylon**, **3.5 m diameter**, 12 gores (Cd ≈ 0.75, descent ≤6 m/s at 16 kg = MTOW 15.8 kg + system)
+- Sizing formula: `Area = (2·m·g) / (Cd·ρ·v²)` = 313.9 / 33.08 ≈ 9.5 m² → Ø3.5 m. (An earlier 0.82 m² / Ø1.2 m figure was an arithmetic error; Ø1.2 m gives 14–17 m/s.)
+- Minimum useful deployment altitude ~20–40 m (detection + release + inflation ≈ 1.5–2.5 s). The system does not cut the motors, so ejection must clear the propeller plane.
 - Mechanism: **spring tube** — latch holds with solenoid OFF; a ~300 ms solenoid pulse pulls the pin and the spring ejects the parachute (~50–100 ms). Reset/brown-out never deploys (R2 keeps Q1 off).
-- Sources: Fruity Chutes, Mars Parachutes, AliExpress "drone parachute 1.2m ripstop"
+- Sources: Fruity Chutes, Mars Parachutes (models rated for 15–16 kg)
 - Details in `docs/investigacion/modulos.md`
 
 ### Free-fall Detection Logic

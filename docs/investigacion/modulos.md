@@ -2,8 +2,9 @@
 
 ## Especificaciones del Sistema
 
-- **Dron:** DJI Matrice 400 (~6.7 kg sin payload, MTOW ~11 kg)
-- **Detección:** Caída libre via IMU/acelerómetro
+- **Dron:** DJI Matrice 400 — 9.74 kg con baterías (5.02 kg sin baterías), MTOW 15.8 kg, carga útil máx. 6 kg ([specs DJI](https://enterprise.dji.com/matrice-400/specs))
+- **Masa de diseño del paracaídas:** 16 kg (MTOW + ~0.3 kg del propio sistema)
+- **Detección:** Caída libre via IMU/acelerómetro (+ giroscopio, pendiente; ver Notas de Diseño)
 - **Despliegue:** Mecanismo de resorte (spring-loaded)
 - **MCU:** PIC18LF25K22 (disponible)
 - **Sistema:** Independiente del Flight Controller
@@ -104,15 +105,29 @@ Con regulador 3.3V (LDO tipo MCP1700) para el PIC y la IMU.
 
 ### Dimensionamiento
 
-Para el Matrice 400 (peor caso 11 kg, velocidad de descenso objetivo ≤6 m/s):
+Para el Matrice 400 (peor caso 16 kg = MTOW 15.8 kg + sistema; velocidad de descenso objetivo ≤6 m/s):
 
 ```
 Área = (2 × m × g) / (Cd × ρ × v²)
-     = (2 × 11 × 9.81) / (0.75 × 1.225 × 36)
-     ≈ 0.82 m²   →  diámetro ~1.02 m  (circular, Cd≈0.75)
+     = (2 × 16 × 9.81) / (0.75 × 1.225 × 36)
+     = 313.9 / 33.08
+     ≈ 9.5 m²   →  diámetro = √(4 × 9.5 / π) ≈ 3.5 m  (circular, Cd≈0.75)
 ```
 
-**Recomendación:** diámetro **1.2–1.3 m** con margen de seguridad. Peso del conjunto: 80–150 g.
+> **Corrección (v3):** la versión anterior daba 0.82 m² / Ø1.2 m por un error aritmético (con 11 kg el resultado real es 6.5 m², no 0.82 m²) y además usaba un peso desactualizado (6.7 / 11 kg). Un paracaídas de Ø1.2 m deja caer al M400 a 14–17 m/s, equivalente a soltarlo desde 10–15 m: no lo protege.
+
+Velocidad de descenso `v = √(2·m·g / (Cd·ρ·A))` según diámetro (Cd 0.75, nivel del mar):
+
+| Diámetro | Área | 10.1 kg (sin carga útil) | 16 kg (MTOW) |
+|---|---|---|---|
+| 1.2 m | 1.13 m² | 13.8 m/s ❌ | 17.4 m/s ❌ |
+| 2.5 m | 4.91 m² | 6.6 m/s | 8.3 m/s ❌ |
+| 3.0 m | 7.07 m² | 5.5 m/s | 7.0 m/s ⚠️ |
+| **3.5 m** | **9.62 m²** | **4.7 m/s** | **6.0 m/s** ✅ |
+
+**Recomendación:** diámetro **3.5 m** si se vuela con carga útil cerca del MTOW; **3.0 m** es aceptable si el dron vuela siempre por debajo de ~12 kg. En altura (ρ menor) la velocidad sube: a 2000 m s.n.m. (ρ ≈ 1.0 kg/m³) aumenta ~10%.
+
+Peso del conjunto (Ø3.5 m): tela ~340 g + cuerdas, refuerzos y bolsa ≈ **0.5–0.7 kg**. Volumen plegado ≈ 1.5–2 L, por lo que el tubo de muelle debe dimensionarse para ese volumen (Ø ~100 mm × ~250 mm) y el resorte para expulsar ~0.6 kg.
 
 ### Tipo de Canopia
 
@@ -126,7 +141,7 @@ Para el Matrice 400 (peor caso 11 kg, velocidad de descenso objetivo ≤6 m/s):
 
 | Propiedad | Valor |
 |-----------|-------|
-| Peso | ~35 g/m² → ~40 g para 1.13 m² (Ø1.2 m) |
+| Peso | ~35 g/m² → ~340 g para 9.6 m² (Ø3.5 m) |
 | Recubrimiento | Silicona (sil-nylon) — reduce porosidad, hidrófugo |
 | Resistencia | Trama ripstop cada ~5 mm evita propagación de desgarros |
 | Plegabilidad | Excelente — comprime bien dentro del tubo de muelle |
@@ -135,24 +150,25 @@ Para el Matrice 400 (peor caso 11 kg, velocidad de descenso objetivo ≤6 m/s):
 
 ### Construcción — Patrón y Costura
 
-**Patrón:** 8 gajos trapezoidales iguales (360°/8 = 45° por gajo)
+**Patrón:** 12 gajos trapezoidales iguales (360°/12 = 30° por gajo). Con Ø3.5 m, 8 gajos tendrían 1.37 m de base y no caben en una tela de 150 cm con márgenes.
 
 | Dimensión | Valor |
 |-----------|-------|
-| Cantidad de gajos | 8 |
-| Alto del gajo | ~0.6 m (radio del paracaídas) |
-| Ancho en la base | (π × 1.2) / 8 ≈ 0.47 m |
+| Cantidad de gajos | 12 |
+| Alto del gajo | ~1.75 m (radio del paracaídas) |
+| Ancho en la base | (π × 3.5) / 12 ≈ 0.92 m |
 | Margen de costura | 1.5 cm en cada borde longitudinal |
+| Tela necesaria | ~12 m lineales de tela de 150 cm (dos gajos invertidos por largo) |
 
 **Orden de costura:**
 
-1. Cortar 8 gajos idénticos con margen de 1.5 cm
-2. Unir gajos de a pares → 4 piezas (4 costuras)
-3. Unir los 4 pares → 2 mitades (2 costuras)
-4. Unir las 2 mitades → canopia completa (1 costura)
+1. Cortar 12 gajos idénticos con margen de 1.5 cm
+2. Unir gajos de a pares → 6 piezas (6 costuras)
+3. Unir los 6 pares en tríos → 2 mitades (4 costuras)
+4. Unir las 2 mitades por ambos bordes → canopia completa (2 costuras; total 12 costuras = 12 gajos)
 5. Reforzar el ápex
 6. Dobladillo en el borde inferior
-7. Fijar las 8 cuerdas de suspensión
+7. Fijar las 12 cuerdas de suspensión
 
 **Tipos de costura por zona:**
 
@@ -171,7 +187,8 @@ La costura plana francesa es la crítica: se cose derecho con derecho a 1 cm, se
 
 **Suspensión:**
 
-- 8 cuerdas Dyneema/Spectra 1 mm o nylon paracord 1.5 mm, longitud ~1.2 m c/u
+- 12 cuerdas Dyneema/Spectra 1 mm (~100 kg de rotura c/u) o nylon paracord 1.5 mm, longitud ~3.5 m c/u (≈ 1 × diámetro)
+- El choque de apertura puede ser varias veces el peso del dron: la carga total de rotura de las cuerdas y del punto de anclaje al dron debe superar ~10× el peso (≥160 kgf)
 - Cada cuerda pasa por dentro del dobladillo del borde y sale por un refuerzo de tafetán (3×3 cm) cosido en el punto de anclaje
 - Nudo de alondra o costura en barra sobre cada refuerzo
 
@@ -198,7 +215,7 @@ Lógica: el pestillo mecánico retiene **sin energía**; un pulso de ~300 ms del
 
 ### Dónde Conseguir
 
-- **Listo para usar:** Fruity Chutes, Mars Parachutes, AliExpress "drone parachute 1.2m ripstop" (~$15–30)
+- **Listo para usar:** Fruity Chutes, Mars Parachutes — buscar modelos certificados/especificados para 15–16 kg (los de AliExpress de Ø1.2 m son para drones de 2–4 kg)
 - **Hecho a medida:** ripstop nylon + costuras radiales
 - **Referencia:** ParaZero SafeAir (whitepapers públicos)
 
@@ -210,5 +227,8 @@ Lógica: el pestillo mecánico retiene **sin energía**; un pulso de ~300 ms del
 - Punto fijo (integer math) en firmware para compensar la falta de FPU
 - Filtro IIR de primer orden en firmware para eliminar vibración de motores
 - Umbral de caída libre: `|√(ax²+ay²+az²)| < 0.3g` sostenido por >100 ms
+- **La caída libre sola no basta:** con un motor fallado el dron gira o se voltea con los demás motores empujando y el acelerómetro no ve 0 g. Agregar criterio con giroscopio (inclinación > ~60–70° o velocidad angular anormal sostenida) y disparo manual por radio
 - El solenoid de 5V requiere boost desde LiPo 3.7V → regulador step-up (MT3608 o similar)
-- Paracaídas circular 1.2–1.3 m de ripstop; tiempo despliegue ~100–200 ms con resorte + solenoid
+- Paracaídas circular **Ø3.5 m** de ripstop (ver Dimensionamiento); expulsión ~50–100 ms con resorte + solenoid, inflado completo ~1–2 s
+- **Altura mínima de despliegue:** detección + pulso + expulsión + inflado ≈ 1.5–2.5 s → se pierden ~20–40 m. Por debajo de esa altura el sistema no alcanza a frenar el dron
+- **Hélices:** el sistema no corta los motores; el tubo debe expulsar hacia arriba, fuera del plano de las hélices, con velocidad suficiente para evitar que la canopia o las cuerdas se enreden (los sistemas comerciales cortan los motores por esta razón)

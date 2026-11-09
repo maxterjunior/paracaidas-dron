@@ -224,7 +224,7 @@ Oscilador interno **HFINTOSC 16 MHz + PLL x4 = 64 MHz**. Sin cristal externo.
 2. **I2C Fast Mode** — pull-ups 4.7kΩ del GY-521 a 3.3V, correctas para 400 kHz
 3. **Flyback D1** — obligatorio, protege Q1 del pico inductivo del solenoide al apagar
 4. **Q1 AO3400A** — logic-level especificado a 2.5V; el pin del PIC a 3.3V lo enciende completamente
-5. **MT3608** — L1 22µH shielded con corriente de saturación ≥ 1.5A; D4 Schottky ≥ 2A; C5 22µF cerámico a la entrada (picos de corriente del solenoide)
+5. **MT3608** — L1 22µH shielded con corriente de saturación ≥ 3A (la corriente de entrada durante el pulso del solenoide supera 2A); D4 Schottky ≥ 2A; C5 22µF cerámico a la entrada (picos de corriente del solenoide)
 6. **MCP1700** — requiere ≥ 1µF en la entrada (C6) y ≥ 1µF en la salida (C2 10µF). Dropout ~180 mV: con VBAT < 3.5V la salida baja de 3.3V (el PIC18LF funciona hasta 1.8V y el MPU-6050 hasta 2.375V)
 7. **C1 y C3** — lo más cerca posible del pin VDD del PIC y del header del GY-521
 8. **ICSP** — RB6/RB7 reservados para PICkit, no usar en la aplicación final
@@ -240,9 +240,28 @@ Oscilador interno **HFINTOSC 16 MHz + PLL x4 = 64 MHz**. Sin cristal externo.
 
 ### Pendientes / mejoras futuras
 
+**Críticas (antes de volar):**
+
+- **Paracaídas Ø3.5 m** (no Ø1.2 m): ver el dimensionamiento corregido en [modulos.md](../investigacion/modulos.md#dimensionamiento). Rediseñar el tubo de muelle para ~1.5–2 L de volumen plegado y ~0.6 kg de expulsión.
+- **Criterio de disparo con giroscopio:** con un motor fallado el dron gira o se voltea y el acelerómetro no ve 0 g. Disparar también por inclinación > ~60–70° o velocidad angular anormal sostenida.
+- **Disparo manual por radio:** entrada adicional (p. ej. salida PWM de un receptor RC a un pin libre del PIC, RA2–RA5) como respaldo.
+- **Lógica de armado:** no disparar en tierra ni durante el despegue (armar tras superar una altura o tiempo de vuelo; requiere barómetro o señal externa).
+- **Caída de tensión durante el pulso del solenoide:** con 1–2 A en el solenoide la LiPo 1S entrega 3–5 A vía el MT3608; si el MCP1700 pierde margen y el PIC se reinicia a mitad del pulso, R2 apaga Q1 y el seguro **no se libera**. Probar con el solenoide real y batería a 3.5 V. Si falla: banco de capacitores en +5V (p. ej. 1000–2200 µF), solenoide que opere desde VBAT, o batería 2S con buck.
+- **Hélices:** el sistema no corta los motores; ubicar el tubo para expulsar hacia arriba, fuera del plano de las hélices. Evaluar una salida para cortar motores si el integrador lo permite.
+- **Pruebas de caída** con masa equivalente (16 kg) antes de montar en el M400; medir altura mínima de despliegue (estimada 20–40 m).
+
+**PCB:**
+
+- **C4 lejos del boost:** el capacitor de salida quedó a ~18 mm de D4/U4, lo que alarga el lazo de conmutación (ruido que puede afectar al IMU). Acercar C4 a D4/U4 o agregar un cerámico de 10–22 µF junto a D4.
+- **Fijación del GY-521:** el header hembra puede aflojarse con la vibración; asegurarlo con tornillo, brida o adhesivo. Barniz conformal en la placa.
+- **Pista C2→R1:** ruteo funcional pero largo y cercano al PIC; puede ordenarse a mano.
+
+**Otras:**
+
 - Medición de tensión de batería (divisor a RA2/AN2) para alarma de batería baja
 - Cargador LiPo (TP4056) o carga externa
-- Criterio de disparo adicional con giroscopio (giro descontrolado tras fallo de motor) y lógica de armado (no disparar en tierra)
+- IMU con mejor tolerancia a vibración (BMI088) si el MPU-6050 da falsos positivos en vuelo
+- Firmware (aún no implementado)
 
 ---
 
