@@ -96,9 +96,9 @@ Netclasses del PCB: `Default` 0.2 mm con 0.15 mm de separación (paso fino del S
 
 ### Pedir la placa a JLCPCB
 
-1. Comprime `hardware/paracaidas-matrice400/jlcpcb/gerbers/` en un .zip y súbelo.
+1. Sube `hardware/paracaidas-matrice400/jlcpcb/paracaidas-matrice400-gerbers.zip` (se genera junto con los gerbers y no se versiona; si no está, comprime la carpeta `gerbers/`).
 2. En PCB Assembly sube `bom_jlcpcb.csv` y `cpl_jlcpcb.csv` (cara superior).
-3. Revisa la rotación de los componentes en el visor antes de confirmar. J1 (UART) y J2 (ICSP) se sueldan a mano.
+3. Revisa la rotación de los componentes en el visor antes de confirmar. Todos los componentes, incluidos los conectores, los monta JLCPCB.
 
 Si cambias el PCB, vuelve a exportar gerbers, taladros y posiciones con `kicad-cli pcb export gerbers|drill|pos`.
 

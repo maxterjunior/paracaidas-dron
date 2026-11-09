@@ -27,8 +27,8 @@ Stock consultado en JLCPCB el 2026-11-09. **B** = básico (sin cargo de carga), 
 | BZ1 | MLT-9650 | Buzzer activo 5V 30 mA | SMD 9.6×9.6 mm (propio) | C96127 | E |
 | LED1 | KT-0603G | LED verde | 0603 | C12624 | E |
 | LED2 | KT-0603R | LED rojo | 0603 | C2286 | B |
-| J1 | Header 1x03 SMD 2.54 | UART debug (GND, TX, RX) — **montaje manual** | PinHeader 1x03 SMD | — | — |
-| J2 | Header 1x06 SMD 2.54 | ICSP PICkit — **montaje manual** | PinHeader 1x06 SMD | — | — |
+| J1 | HX PZ2.54-1x3P TP-YQ | Header macho SMD 2.54 mm, UART debug (GND, TX, RX) | PinHeader 1x03 SMD Pin1Left | C41417360 | E |
+| J2 | HX PZ2.54-1x6P TP-YQ | Header macho SMD 2.54 mm, ICSP PICkit | PinHeader 1x06 SMD **Pin1Right** | C41417363 | E |
 | R1, R2 | 10kΩ | Pull-up MCLR / pull-down puerta Q1 | 0603 | C25804 | B |
 | R3 | 100Ω | LED1 (Vf verde ≈ 2.8–3.1V) | 0603 | C22775 | B |
 | R4 | 330Ω | LED2 | 0603 | C23138 | B |
@@ -181,7 +181,7 @@ Pines libres útiles: **RB2/INT2** (p. ej. disparo manual por radio), RB3–RB5,
 | 5 | PGC (RB6) |
 | 6 | NC (PGM/LVP, no usado) |
 
-> J1 y J2 son headers SMD de 2.54 mm de montaje manual (no tienen LCSC y no van en el BOM de JLCPCB). También se puede programar apoyando un adaptador de pogo pins sobre los pads.
+> J1 y J2 son headers macho SMD de 2.54 mm con patas alternadas, montados por JLCPCB. El footprint de cada uno se eligió para coincidir con el pin 1 del componente de LCSC: el 1x3 tiene el pin 1 a la izquierda (`Pin1Left`) y el 1x6 a la derecha (`Pin1Right`). Si se cambia el número de parte, verificar de nuevo de qué lado queda el pin 1.
 
 ### Q3 — Interruptor de carga (AO3401A)
 
@@ -261,11 +261,12 @@ Oscilador interno **HFINTOSC 16 MHz + PLL x4 = 64 MHz**. Sin cristal externo.
 
 Archivos en `hardware/paracaidas-matrice400/jlcpcb/`:
 - `gerbers/` — Gerber + taladros Excellon (comprimir la carpeta en un .zip para subirla).
-- `bom_jlcpcb.csv` — BOM con columna `LCSC Part #` (29 líneas, 38 componentes).
+- `bom_jlcpcb.csv` — BOM con columna `LCSC Part #` (31 líneas, 40 componentes: todos los de la placa).
+- `paracaidas-matrice400-gerbers.zip` — los gerbers comprimidos, listos para subir (no se versiona: `.gitignore` excluye `*.zip`).
 - `cpl_jlcpcb.csv` — posiciones para el montaje (cara superior).
 
-> En el visor de JLCPCB **revisar la rotación** de los componentes polarizados o asimétricos (U1, U2, U3, U4, Q1–Q3, D1, D4, C7, LEDs, BZ1, BT1, J4): KiCad y JLC no siempre usan el mismo cero de rotación. J1/J2 se sueldan a mano.
-> Hay 9 referencias extendidas con cargo de carga en el montaje (U1, U2, U4, L1, BT1/J4, SW1, BZ1, LED1, C7) más R8, extendida "preferida" (sin cargo); el resto son básicas.
+> En el visor de JLCPCB **revisar la rotación** de los componentes polarizados o asimétricos (U1, U2, U3, U4, Q1–Q3, D1, D4, C7, LEDs, BZ1, BT1, J1, J2, J4): KiCad y JLC no siempre usan el mismo cero de rotación.
+> Hay 11 referencias extendidas con cargo de carga en el montaje (U1, U2, U4, L1, BT1/J4, SW1, BZ1, LED1, C7, J1, J2) más R8, extendida "preferida" (sin cargo); el resto son básicas.
 
 ### Pendientes / mejoras futuras
 
