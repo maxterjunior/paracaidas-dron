@@ -311,6 +311,7 @@ code { font: 400 12px var(--font-mono); background: var(--chip); padding: 1px 5p
   ];
   const phaseEl = document.getElementById('phase');
   function apply(t) {
+    t = clamp(+t || 0);
     const a = clamp(t / 0.12), b = clamp((t - 0.12) / 0.1), c = ease(clamp((t - 0.2) / 0.25));
     emb.position.y = 10 * a;
     lever.rotation.y = 22 * D2R * b;
@@ -327,7 +328,7 @@ code { font: 400 12px var(--font-mono); background: var(--chip); padding: 1px 5p
     canopy.scale.set(Math.max(bloom, 0.02), Math.max(bloom, 0.02), 1);
     canopy.position.z = 0;
     bridle.visible = t > 0.4;
-    const ph = PHASES.filter(p => t >= p[0]).pop();
+    const ph = PHASES.filter(p => t >= p[0]).pop() || PHASES[0];
     phaseEl.textContent = `t ≈ ${(t * 2.2).toFixed(2)} s · ${ph[1]}`;
   }
 
@@ -412,8 +413,9 @@ code { font: 400 12px var(--font-mono); background: var(--chip); padding: 1px 5p
   partsReady.then(() => apply(+slider.value / 1000))
     .catch(e => { phaseEl.textContent = `Falta la pieza «${e.message}» en piezas.js. Regenera con empaquetar.py.`; });
   function loop(now) {
+    requestAnimationFrame(loop);   // primero: un error en un cuadro no detiene el visor
     if (playing) {
-      const v = Math.min(1000, +slider.value + (now - last) / 2.2);
+      const v = Math.min(1000, +slider.value + Math.max(0, now - last) / 2.2);
       slider.value = v; apply(v / 1000);
       if (v >= 1000) { playing = false; play.textContent = '▶ Disparar'; }
     }
@@ -424,7 +426,6 @@ code { font: 400 12px var(--font-mono); background: var(--chip); padding: 1px 5p
       if (tween.k >= 1) tween = null;
     }
     controls.update(); renderer.render(scene, camera);
-    requestAnimationFrame(loop);
   }
   resize(); requestAnimationFrame(loop);
 })();
