@@ -3,6 +3,7 @@
 *-backups/
 *.zip
 fp-info-cache
+*.lck
 
 # KiCad history plugin
 .history/

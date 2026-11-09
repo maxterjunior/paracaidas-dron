@@ -23,7 +23,7 @@
 | UART              | 2x EUSART        | 1x USART         | 3x USART         |
 | FPU               | ❌ No            | ❌ No            | ✅ Sí            |
 | USB               | ❌ No            | ✅ Sí (inútil)   | ✅ Sí            |
-| Level shifter IMU | ❌ No necesario  | ⚠️ Necesario     | ❌ No necesario  |
+| Level shifter IMU | ❌ No necesario  | ❌ No necesario (2.0–5.5V) | ❌ No necesario  |
 | Disponible        | ✅ En mano       | —                | —                |
 | **Seleccionado**  | ✅ **SÍ**        | —                | —                |
 
@@ -63,8 +63,10 @@
 
 | Componente    | Uso                                      | Costo |
 |---------------|------------------------------------------|-------|
-| MOSFET N IRLZ44N | Switching solenoid desde pin PIC 3.3V | ~$0.5 |
+| MOSFET N AO3400A | Switching solenoid desde pin PIC 3.3V (Rds(on) especificada a Vgs 2.5V) | ~$0.1 |
+| ~~IRLZ44N~~ | Descartado: Rds(on) especificada a Vgs 4–5V, no garantiza conducción plena a 3.3V | — |
 | Diodo 1N4007  | Flyback — protección contra pico solenoid | ~$0.1 |
+| Diodo SS34    | Schottky de salida del boost MT3608 (obligatorio) | ~$0.1 |
 | Resistor 10kΩ | Pull-down gate MOSFET                    | ~$0.01|
 
 ---
@@ -79,6 +81,8 @@
 
 Con regulador 3.3V (LDO tipo MCP1700) para el PIC y la IMU.
 
+> La autonomía en standby supone el solenoide **apagado** durante el vuelo (lógica de liberación por pulso, ver abajo). Si el solenoide tuviera que estar energizado para retener (~3 W desde la LiPo vía boost), la batería de 1000 mAh no llegaría a 1 h.
+
 ---
 
 ## Tabla Final — Módulos Seleccionados
@@ -88,10 +92,11 @@ Con regulador 3.3V (LDO tipo MCP1700) para el PIC y la IMU.
 | **MCU**           | PIC18LF25K22        | Disponible, 3.3V nativo, 2x MSSP, 16 MIPS       |
 | **IMU**           | MPU-6050 (GY-521)   | Económico, suficiente, fácil de conseguir        |
 | **Actuador**      | Solenoid 5V         | Rápido (<50ms), simple, reversible               |
-| **Driver**        | MOSFET IRLZ44N      | Lógica 3.3V compatible, bajo Vgs threshold       |
+| **Driver**        | MOSFET AO3400A      | Logic-level especificado a Vgs 2.5V              |
 | **Regulador**     | MCP1700-3302E       | LDO 3.3V, hasta 250mA, muy bajo quiescent current|
 | **Batería**       | LiPo 1S 1000mAh     | Ligera, suficiente autonomía para vuelo          |
 | **Protección**    | Diodo 1N4007        | Flyback del solenoid                             |
+| **Boost 5V**      | MT3608 + SS34 + 22µH | VBAT → 5.1V para solenoide y buzzer             |
 
 ---
 
@@ -189,7 +194,7 @@ Compatible con el solenoid 5V (SOL1) del circuito actual:
 | Pirotécnico (e-match) | ⚠️ Requiere rediseño circuito | <50 ms | — |
 
 **Selección:** tubo de muelle + solenoid como seguro mecánico.
-Lógica: solenoid energizado = retenido; activado = muelle expulsa el paracaídas.
+Lógica: el pestillo mecánico retiene **sin energía**; un pulso de ~300 ms del solenoide retira el pin y el muelle expulsa el paracaídas. Así no hay consumo en vuelo y un reset o corte de energía no despliega el paracaídas.
 
 ### Dónde Conseguir
 

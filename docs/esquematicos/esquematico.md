@@ -1,59 +1,60 @@
 # Esquemático — Sistema Paracaídas para DJI Matrice 400
 
+Revisión **v3**. Archivo KiCad: `hardware/paracaidas-matrice400/paracaidas-matrice400.kicad_sch`
+(las referencias de este documento coinciden 1:1 con las del esquemático).
+
 ## Componentes
 
-| Ref | Componente | Descripción |
-|-----|------------|-------------|
-| U1 | PIC18LF25K22 | MCU principal (28-pin DIP) |
-| U2 | MPU-6050 (GY-521) | IMU — detección caída libre |
-| U3 | MCP1700-3302E | LDO regulador 3.3V |
-| U4 | MT3608 | Step-up boost 3.7V → 5V |
-| Q1 | IRLZ44N | MOSFET N-channel driver solenoid |
-| Q2 | 2N3904 | NPN transistor driver buzzer |
-| D1 | 1N4007 | Diodo flyback protección solenoid |
-| BT1 | LiPo 1S 1000mAh | Batería 3.7V |
-| SOL1 | Solenoid 5V | Actuador despliegue resorte |
-| LED1 | LED verde | Indicador sistema activo |
-| LED2 | LED rojo | Indicador despliegue/fallo |
-| BZ1 | Buzzer activo 5V | Alarma sonora |
-| SW1 | Switch ON/OFF | Encendido sistema |
-| SW2 | Pulsador NO | Reset MCLR (desarrollo) |
-| L1 | Inductor 22µH 1A | MT3608 step-up |
-| R1 | 10kΩ | Pull-up MCLR |
-| R2 | 10kΩ | Pull-down Gate Q1 |
-| R3 | 330Ω | Limitador corriente LED1 |
-| R4 | 330Ω | Limitador corriente LED2 |
-| R5 | 4.7kΩ | Pull-up I2C SCL |
-| R6 | 4.7kΩ | Pull-up I2C SDA |
-| R7 | 1kΩ | Base Q2 (driver buzzer) |
-| R_FB1 | 750kΩ | Feedback MT3608 (parte alta) |
-| R_FB2 | 100kΩ | Feedback MT3608 (parte baja) |
-| C1 | 100nF | Desacople VDD PIC (junto al pin 20) |
-| C2 | 10µF | Filtro salida LDO 3.3V |
-| C3 | 100nF | Desacople VCC MPU-6050 (junto al pin VCC) |
-| C4 | 100µF | Filtro salida MT3608 5V |
-| C5 | 100nF | Desacople entrada MT3608 |
+| Ref | Componente | Descripción | Footprint |
+|-----|------------|-------------|-----------|
+| U1 | PIC18LF25K22-I/SP | MCU principal (28-pin SPDIP) | DIP-28 W7.62mm |
+| J3 | Módulo GY-521 (MPU-6050) | IMU — detección caída libre, header 8 pines | PinHeader 1x08 2.54mm |
+| U3 | MCP1700T-3302E/TT | LDO 3.3V, 250 mA | SOT-23 |
+| U4 | MT3608 | Step-up boost VBAT → 5V | SOT-23-6 |
+| Q1 | AO3400A | MOSFET N logic-level, driver solenoide (Rds(on) ≤ 48 mΩ @ Vgs 2.5V) | SOT-23 |
+| Q2 | 2N3904 | NPN driver buzzer | TO-92 |
+| D1 | 1N4007 | Flyback solenoide | DO-41 |
+| D4 | SS34 | Schottky de salida del MT3608 (40V 3A) | SMA |
+| BT1 | LiPo 1S 1000mAh | Batería 3.7V (conector JST-PH 2 pines) | JST PH 2P |
+| J4 | Solenoide 5V (SOL1) | Conector del actuador de liberación | Bornera 2P 5.08mm |
+| LED1 | LED verde 3mm | Indicador sistema activo / armado | LED THT 3mm |
+| LED2 | LED rojo 3mm | Indicador despliegue / fallo | LED THT 3mm |
+| BZ1 | Buzzer activo 5V | Alarma sonora | Buzzer 12x9.5mm |
+| SW1 | Interruptor deslizante | Encendido sistema (VBAT) | — |
+| SW2 | Pulsador NO | Reset MCLR (desarrollo) | Pulsador 6mm THT |
+| J1 | Header 1x03 | UART debug (GND, TX, RX) | PinHeader 1x03 |
+| J2 | Header 1x06 | ICSP PICkit (MCLR, VDD, GND, PGD, PGC, NC) | PinHeader 1x06 |
+| L1 | 22µH ≥1.5A (shielded) | Inductor MT3608 | — |
+| R1 | 10kΩ | Pull-up MCLR | 0805 / THT |
+| R2 | 10kΩ | Pull-down gate Q1 | |
+| R3 | 330Ω | LED1 | |
+| R4 | 330Ω | LED2 | |
+| R5 | 4.7kΩ | Pull-up SCL (**DNP** si el GY-521 ya trae pull-ups) | |
+| R6 | 4.7kΩ | Pull-up SDA (**DNP** si el GY-521 ya trae pull-ups) | |
+| R7 | 1kΩ | Base Q2 | |
+| R8 | 750kΩ 1% | Feedback MT3608, parte alta (antes R_FB1) | |
+| R9 | 100kΩ 1% | Feedback MT3608, parte baja (antes R_FB2) | |
+| C1 | 100nF | Desacople VDD PIC (junto al pin 20) | |
+| C2 | 10µF | Salida LDO 3.3V | |
+| C3 | 100nF | Desacople VCC GY-521 (junto al header) | |
+| C4 | 100µF 10V | Salida MT3608 5V (bulk para el pico del solenoide) | |
+| C5 | 22µF 10V | Entrada MT3608 (cerámico X5R/X7R) | |
+| C6 | 1µF | Entrada MCP1700 (requerido por datasheet) | |
 
 ---
 
 ## Diagrama de Bloques
 
 ```
-                    ┌──────────────────────────────────────────────────┐
-                    │              SISTEMA PARACAÍDAS                  │
-                    │                                                  │
-  ┌──────────┐      │  ┌──────────────────┐   ┌────────────────────┐   │
-  │  LiPo 1S │──SW1─┼─►│ MT3608 Step-Up   │──►│     5V RAIL        │   │
-  │ 3.7V     │      │  │ L1=22µH          │   │  SOL1 / BZ1        │   │
-  │ 1000mAh  │      │  │ R_FB1=750kΩ      │   └────────────────────┘   │
-  └──────────┘      │  │ R_FB2=100kΩ      │                            │
-                    │  └──────────────────┘   ┌────────────────────┐   │
-                    │       │                 │     3.3V RAIL      │   │
-                    │  ┌────▼──────────┐  ───►│  PIC18LF25K22      │   │
-                    │  │ MCP1700-3302E │      │  MPU-6050          │   │
-                    │  │ LDO 3.3V      │      └────────────────────┘   │
-                    │  └───────────────┘                               │
-                    └──────────────────────────────────────────────────┘
+                ┌──────────────────────────────────────────────────────────┐
+  ┌─────────┐   │  VBAT   ┌───────────────────────────┐    5V RAIL         │
+  │ LiPo 1S │─SW1─────┬──►│ MT3608 + L1 + D4 (SS34)   │──► J4 SOL1 / BZ1   │
+  │ 1000mAh │   │     │   │ R8 750k / R9 100k → 5.1V  │                    │
+  └─────────┘   │     │   └───────────────────────────┘                    │
+                │     │   ┌───────────────────────────┐    3.3V RAIL       │
+                │     └──►│ MCP1700 LDO 3.3V          │──► U1 PIC18LF25K22 │
+                │         └───────────────────────────┘    J3 GY-521       │
+                └──────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -61,149 +62,141 @@
 ## Diagrama Esquemático ASCII
 
 ```
-                                        3.3V
-                                         │
-                              C2 10µF   C1 100nF
-BT1+ ──SW1──┬────────────────────────────┤
-            │                           MCP1700 (U3)
-            │  C5 100nF                 IN──BT1+
-            ├──┤├──GND                  OUT──3.3V
-            │                           GND──GND
+ALIMENTACIÓN
+
+BT1+ ──SW1──┬── VBAT ──────────────────────────────────────────────┐
+            │                                                      │
+           C6 1µF      U3 MCP1700                                  │
+            │        VI ──┤      ├── VO ──┬── +3V3                 │
+           GND           GND           C2 10µF                     │
+                                         GND                       │
+                                                                   │
+   VBAT ──┬── C5 22µF ── GND                                       │
+          ├── U4.IN                                                │
+          ├── U4.EN                                                │
+          └── L1 22µH ── SW_NODE ── D4 SS34 (A→K) ──┬── +5V        │
+                         │                          ├── C4 100µF ── GND
+                       U4.SW                        ├── R8 750k ──┬── FB (U4.FB)
+                                                    │             R9 100k
+                                                    │             GND
+BT1- ───────────────────────────────────────────────────────── GND
+
+
+MCU / IMU
+
+           +3V3                         U1 PIC18LF25K22
             │
-            ├──[MT3608 U4]──────────────────► 5V
-            │   IN   SW──L1(22µH)──OUT        │
-            │   GND                    C4 100µF┤
-            │   EN──IN+                       GND
-            │   FB──R_FB1(750kΩ)──OUT
-            │      └──R_FB2(100kΩ)──GND
+           R1 10k
             │
-BT1- ───────┴──────────────────────────────── GND
+  J2.1 ─────┼──── MCLR (1)
+  SW2 ──────┘ (a GND)
+                         VDD (20) ── +3V3 + C1 100nF
+                         VSS (8, 19) ── GND
+   LED1: RA0 (2)  ── R3 330Ω ── LED1 verde ── GND
+   LED2: RA1 (3)  ── R4 330Ω ── LED2 rojo  ── GND
+   BZ:   RC0 (11) ── R7 1kΩ ── Base Q2
+   SOL:  RC2 (13) ── Gate Q1 (+ R2 10k a GND)
+   SCL:  RC3 (14) ── J3.3 (+ R5 4.7k a +3V3, DNP)
+   SDA:  RC4 (15) ── J3.4 (+ R6 4.7k a +3V3, DNP)
+   TX:   RC6 (17) ── J1.2
+   RX:   RC7 (18) ── J1.3
+   INT:  RB0 (21) ── J3.8
+   PGC:  RB6 (27) ── J2.5
+   PGD:  RB7 (28) ── J2.4
 
 
-                    ┌─────── R1 10kΩ ──── 3.3V
-                    │
-                    ├─────── SW2 ─────── GND  ← Reset (pulsador NO)
-                    │
-                    │MCLR(1)┐
-                             │  PIC18LF25K22 (U1)
-        3.3V──C1(100nF)──GND─┤VDD(20)
-                    GND───── ┤VSS(8)(19)
-                             │
-        MPU-6050 (U2)        │
-        ┌──────────┐         │
-3.3V──►─┤VCC       │  R5     │
-       C3┤GND  SCL─┼──┤├─3.3V┤RC3/SCL1(14)  ← I2C clock
-  100nF  │     SDA─┼──┤├─3.3V┤RC4/SDA1(15)  ← I2C data
-         │     INT─┼─────────┤RB0/INT0(21)  ← Interrupción HW
-         │     AD0─┼──GND    │         R6
-         └──────────┘    3.3V┤          └──┤├── SDA pull-up
-                             │
-                             ┤RC2/CCP1(13) ──────────────────────► Gate Q1
-                             │                                        │
-                             ┤RA0(2) ── R3 330Ω ── LED1(verde) ── GND
-                             │
-                             ┤RA1(3) ── R4 330Ω ── LED2(rojo)  ── GND
-                             │
-                             ┤RC0(11) ── R7 1kΩ ── Base Q2(2N3904)
-                             │                        │
-                             ┤RC6/TX1(17) ─► USB-UART RX  (debug)
-                             ┤RC7/RX1(18) ◄─ USB-UART TX  (debug)
-                             │
-                             ┤RB6/PGC(27) ─► PICKit PGC
-                             ┤RB7/PGD(28) ─► PICKit PGD
-                             └─────────────────────────
+ACTUADORES
 
-
-MOSFET Q1 (IRLZ44N):          NPN Q2 (2N3904) — Driver Buzzer:
-  Gate  ─── RC2(PIC)             Base      ── R7 ── RC0(PIC)
-  Gate  ─── R2(10kΩ) ─── GND    Emitter   ── GND
-  Drain ─── SOL1(-)              Collector ── BZ1(-) ── BZ1(+) ── 5V
-  Drain ─── Ánodo D1
-  Source─── GND
-
-SOL1 (+) ──► 5V
-SOL1 (-) ──► Drain Q1
-D1: Cátodo → 5V  /  Ánodo → Drain Q1   ← flyback
+  +5V ── J4.1 (SOL1+)            +5V ── BZ1(+)
+         J4.2 (SOL1−) ── SOL_DRV        BZ1(−) ── Colector Q2
+  D1: Cátodo +5V / Ánodo SOL_DRV        Emisor Q2 ── GND
+  Q1 AO3400A: D = SOL_DRV, S = GND, G = SOL_GATE
 ```
 
 ---
 
 ## Tabla de Conexiones (Netlist)
 
-### PIC18LF25K22 — Asignación de Pines
+| Net | Conexiones |
+|-----|------------|
+| BAT+ | BT1(+), SW1.A |
+| VBAT | SW1.B, U3.VI(3), C6, U4.IN(5), U4.EN(4), C5, L1.1 |
+| SW_NODE | U4.SW(1), L1.2, D4.A |
+| +5V | D4.K, C4, R8, D1.K, J4.1, BZ1(+) |
+| FB | U4.FB(3), R8, R9 |
+| +3V3 | U3.VO(2), C2, U1.VDD(20), C1, R1, R5, R6, J3.1 (VCC), C3, J2.2 |
+| GND | BT1(−), U3.GND, U4.GND, C1–C6, R2, R9, U1.VSS(8,19), SW2.2, LED1.K, LED2.K, Q1.S, Q2.E, J1.1, J2.3, J3.2, J3.7 (AD0) |
+| MCLR | U1.1, R1, SW2.1, J2.1 |
+| LED_G / LED_G_A | U1.RA0(2) – R3 – LED1.A |
+| LED_R / LED_R_A | U1.RA1(3) – R4 – LED2.A |
+| BZ_CTRL / BZ_BASE | U1.RC0(11) – R7 – Q2.B |
+| BZ_DRV | Q2.C, BZ1(−) |
+| SOL_GATE | U1.RC2(13), Q1.G, R2 |
+| SOL_DRV | Q1.D, D1.A, J4.2 |
+| SCL | U1.RC3(14), J3.3, R5 |
+| SDA | U1.RC4(15), J3.4, R6 |
+| IMU_INT | U1.RB0(21), J3.8 |
+| UART_TX | U1.RC6(17), J1.2 (→ RX del adaptador USB-UART) |
+| UART_RX | U1.RC7(18), J1.3 (← TX del adaptador USB-UART) |
+| PGC | U1.RB6(27), J2.5 |
+| PGD | U1.RB7(28), J2.4 |
 
-| Pin | Nombre | Función | Conectado a |
-|-----|--------|---------|-------------|
-| 1 | MCLR | Reset | R1 10kΩ → 3.3V + SW2 → GND |
-| 2 | RA0 | GPIO OUT | R3 330Ω → LED1 verde → GND |
-| 3 | RA1 | GPIO OUT | R4 330Ω → LED2 rojo → GND |
-| 8 | VSS | GND | GND |
-| 9 | RA7/OSC1 | NC | Oscilador interno activo |
-| 10 | RA6/OSC2 | NC | Oscilador interno activo |
-| 11 | RC0 | GPIO OUT | R7 1kΩ → Base Q2 (buzzer) |
-| 13 | RC2 | GPIO OUT | Gate Q1 IRLZ44N (solenoid) |
-| 14 | RC3/SCL1 | I2C Clock | MPU-6050 SCL + R5 4.7kΩ → 3.3V |
-| 15 | RC4/SDA1 | I2C Data | MPU-6050 SDA + R6 4.7kΩ → 3.3V |
-| 17 | RC6/TX1 | UART TX | USB-UART RX (debug) |
-| 18 | RC7/RX1 | UART RX | USB-UART TX (debug) |
-| 19 | VSS | GND | GND |
-| 20 | VDD | Alimentación | 3.3V + C1 100nF → GND |
-| 21 | RB0/INT0 | INT externo | MPU-6050 INT (data ready) |
-| 27 | RB6/PGC | ICSP Clock | PICKit PGC |
-| 28 | RB7/PGD | ICSP Data | PICKit PGD |
+Sin conectar (no-connect): U1 pines 4–7, 9, 10, 12, 16, 22–26 · U4.NC(6) · J2.6 · J3.5 (XDA) · J3.6 (XCL).
 
-### MPU-6050 (GY-521)
+### J3 — Módulo GY-521 (orden del header)
 
-| Pin | Conectado a |
-|-----|-------------|
-| VCC | 3.3V + C3 100nF directo al pin |
-| GND | GND |
-| SCL | RC3/SCL1 PIC pin 14 |
-| SDA | RC4/SDA1 PIC pin 15 |
-| INT | RB0/INT0 PIC pin 21 |
-| AD0 | GND → dirección I2C 0x68 |
-| XCL | NC |
-| XDA | NC |
+| Pin | Señal | Conexión |
+|-----|-------|----------|
+| 1 | VCC | +3V3 + C3 100nF |
+| 2 | GND | GND |
+| 3 | SCL | RC3 |
+| 4 | SDA | RC4 |
+| 5 | XDA | NC |
+| 6 | XCL | NC |
+| 7 | AD0 | GND → dirección 0x68 |
+| 8 | INT | RB0/INT0 |
 
-### MT3608 (Step-Up 3.7V → 5V)
+> El GY-521 trae su propio LDO (662K) y pull-ups de 4.7kΩ. Alimentado con 3.3V el MPU-6050 queda en ~3.1V (rango válido 2.375–3.46V). Con las pull-ups del módulo, R5/R6 se montan solo si el módulo no las tiene.
 
-| Pin/Elemento | Conectado a | Valor |
-|---|---|---|
-| IN+ | BT1+ post SW1 + C5 100nF a GND | — |
-| GND | GND | — |
-| SW | L1 → OUT | L1 = 22µH 1A |
-| OUT | 5V rail + C4 100µF a GND | — |
-| EN | IN+ (siempre habilitado) | — |
-| FB | Divisor R_FB1/R_FB2 | Vout = 0.6×(1 + R_FB1/R_FB2) = 5V |
-| R_FB1 | FB → OUT | 750kΩ |
-| R_FB2 | FB → GND | 100kΩ |
+### J2 — ICSP (pinout PICkit)
 
-> Verificación: 0.6 × (1 + 750/100) = 0.6 × 8.5 = **5.1V** ✅
+| Pin | Señal |
+|-----|-------|
+| 1 | MCLR/VPP |
+| 2 | VDD (+3V3) |
+| 3 | GND |
+| 4 | PGD (RB7) |
+| 5 | PGC (RB6) |
+| 6 | NC (PGM/LVP, no usado) |
 
-### MOSFET Q1 — IRLZ44N
+> Al programar con el PICkit, configurar VDD a 3.3V (el PIC18**LF** admite máx. 3.6V) o alimentar desde la batería con el PICkit sin suministrar tensión.
 
-| Terminal | Conectado a | Nota |
-|---|---|---|
-| Gate | RC2 PIC pin 13 + R2 10kΩ a GND | Vgs(th) max = 2V → 3.3V lo satura completamente ✅ |
-| Drain | SOL1(-) + Ánodo D1 | — |
-| Source | GND | — |
+### MT3608 — Boost VBAT → 5V
 
-### NPN Q2 — 2N3904 (Driver Buzzer)
+Topología boost estándar: **L1 entre VBAT y SW; Schottky D4 de SW (ánodo) a +5V (cátodo)**. El MT3608 no es síncrono: sin D4 no hay salida.
 
-| Terminal | Conectado a |
-|---|---|
-| Base | R7 1kΩ → RC0 PIC pin 11 |
-| Emitter | GND |
-| Collector | BZ1(-) |
+> Verificación: Vout = 0.6 × (1 + R8/R9) = 0.6 × (1 + 750/100) = **5.1V** ✅
 
-BZ1(+) → 5V / BZ1(-) → Collector Q2
-
-### Diodo D1 — 1N4007 (Flyback)
+### Q1 — AO3400A (driver solenoide)
 
 | Terminal | Conectado a |
 |---|---|
-| Cátodo | 5V rail |
-| Ánodo | Drain Q1 |
+| Gate | RC2 + R2 10kΩ a GND (apagado durante el reset/arranque) |
+| Drain | SOL_DRV (J4.2 + ánodo D1) |
+| Source | GND |
+
+> Se reemplaza el IRLZ44N: su Rds(on) está especificada a Vgs = 4–5V, y con 3.3V en el gate no está garantizada la conducción plena. El AO3400A está especificado a Vgs = 2.5V (≤ 48 mΩ) y soporta 5.7A.
+
+---
+
+## Lógica de Despliegue (v3)
+
+**Solenoide normalmente desenergizado; un pulso libera el paracaídas.**
+
+- En vuelo el solenoide **no consume** (el pestillo mecánico retiene el tapón del tubo por sí solo, p. ej. pin de un solenoide push-pull con muelle de retorno que traba el tapón).
+- Para desplegar, el PIC pone RC2 en alto durante **~300 ms**: el solenoide retira el pin y el muelle expulsa el paracaídas.
+- Arranque, reset del PIC o corte de energía → R2 mantiene Q1 apagado → **no hay despliegue accidental**.
+- Antes (v2) el solenoide debía estar energizado todo el vuelo (~3 W desde la LiPo de 1000 mAh, < 1 h de autonomía) y cualquier reset o caída de tensión desplegaba el paracaídas.
 
 ---
 
@@ -230,22 +223,45 @@ Oscilador interno **HFINTOSC 16 MHz + PLL x4 = 64 MHz**. Sin cristal externo.
 ## Notas de Diseño
 
 1. **Oscilador interno** — sin cristal externo, RA6/RA7 quedan libres como GPIO
-2. **I2C Fast Mode** — pull-ups 4.7kΩ a 3.3V correctos para 400 kHz
-3. **Flyback D1** — obligatorio, protege Q1 del pico inductivo del solenoid al apagar
-4. **IRLZ44N + 3.3V** — compatible: Vgs(th) máx = 2V, con 3.3V en gate queda en saturación total
-5. **MT3608 inductor** — usar 22µH con rating de corriente ≥1A, tipo shielded preferible
-6. **C1 y C3** — colocar lo más cerca posible de los pines VDD del PIC y VCC del MPU-6050
-7. **ICSP** — RB6/RB7 reservados para PICKit, no usar en aplicación final
-8. **SW2** — solo para desarrollo, puede omitirse en versión de producción
-9. **Dirección MPU-6050** — AD0 a GND = 0x68, a 3.3V = 0x69 (si se necesitan dos IMUs)
+2. **I2C Fast Mode** — pull-ups 4.7kΩ a 3.3V correctas para 400 kHz (no duplicar con las del GY-521)
+3. **Flyback D1** — obligatorio, protege Q1 del pico inductivo del solenoide al apagar
+4. **Q1 AO3400A** — logic-level especificado a 2.5V; el pin del PIC a 3.3V lo enciende completamente
+5. **MT3608** — L1 22µH shielded con corriente de saturación ≥ 1.5A; D4 Schottky ≥ 2A; C5 22µF cerámico a la entrada (picos de corriente del solenoide)
+6. **MCP1700** — requiere ≥ 1µF en la entrada (C6) y ≥ 1µF en la salida (C2 10µF). Dropout ~180 mV: con VBAT < 3.5V la salida baja de 3.3V (el PIC18LF funciona hasta 1.8V y el MPU-6050 hasta 2.375V)
+7. **C1 y C3** — lo más cerca posible del pin VDD del PIC y del header del GY-521
+8. **ICSP** — RB6/RB7 reservados para PICkit, no usar en la aplicación final
+9. **SW2** — solo para desarrollo, puede omitirse en producción
+10. **Dirección MPU-6050** — AD0 a GND = 0x68, a 3.3V = 0x69
+
+### Pendientes / mejoras futuras
+
+- Medición de tensión de batería (divisor a RA2/AN2) para alarma de batería baja
+- Cargador LiPo (TP4056) o carga externa
+- Criterio de disparo adicional con giroscopio (giro descontrolado tras fallo de motor) y lógica de armado (no disparar en tierra)
 
 ---
 
-## Correcciones v1 → v2
+## Historial de Correcciones
+
+### v2 → v3
+
+| # | Problema | Corrección |
+|---|---|---|
+| 1 | MT3608 sin diodo de salida; L1 mal ubicado (`SW──L1──OUT`) | Topología boost correcta: L1 VBAT→SW, D4 SS34 SW→+5V |
+| 2 | IRLZ44N no garantiza conducción plena con Vgs = 3.3V | Q1 → AO3400A (especificado a 2.5V) |
+| 3 | Sin capacitor de entrada en el MCP1700 | C6 1µF |
+| 4 | C5 100nF insuficiente en la entrada del MT3608 | C5 → 22µF |
+| 5 | Solenoide energizado = retenido (consume todo el vuelo, despliega en reset/corte) | Solenoide normalmente apagado; pulso de ~300 ms libera |
+| 6 | J1, J2, BT1, SOL1 sin definir en el esquemático | J1 UART 1x03, J2 ICSP 1x06, BT1 JST-PH, J4 SOL1 |
+| 7 | GY-521 representado como chip QFN | J3 header 1x08 con el pinout del módulo |
+| 8 | Esquemático KiCad con LEDs infrarrojos, PIC SOIC y SW2 DIP | LEDs visibles, PIC SPDIP, SW2 pulsador |
+| 9 | R_FB1/R_FB2 con nombres distintos a KiCad | Renombrados R8/R9 |
+
+### v1 → v2
 
 | # | Problema detectado | Corrección aplicada |
 |---|---|---|
 | 1 | BZ1 sin pin ni driver | Agregado Q2 (2N3904) + R7 (1kΩ) + pin RC0 |
 | 2 | MT3608 sin valores de feedback | R_FB1=750kΩ, R_FB2=100kΩ, L1=22µH 1A, C5=100nF entrada |
 | 3 | Sin botón de reset | Agregado SW2 (pulsador NO) en MCLR a GND |
-| 4 | Nota IRLZ44N faltante | Confirmado: Vgs(th) 2V → 3.3V satura completamente |
+| 4 | Nota IRLZ44N faltante | (Revisado en v3: la nota era incorrecta) |
