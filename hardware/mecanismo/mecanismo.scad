@@ -15,7 +15,7 @@
 //
 // Uso:  openscad -D 'pieza="base"' -o base.stl mecanismo.scad
 //   piezas imprimibles: base, tubo, piston, tapa, collar, palanca, caja, tapa_caja, adaptador
-//   piezas de referencia (no se imprimen): resorte, solenoide, embolo, paracaidas, dron
+//   piezas de referencia (no se imprimen): resorte, solenoide, embolo, paracaidas, dron, helices
 //   "conjunto" = todo montado sobre el dron; "mecanismo" = sin el dron
 //   Todas las piezas salen en su posición de montaje; orientarlas en el slicer.
 // =============================================================================
@@ -291,7 +291,6 @@ module dron() {
     for (a = [45:90:315]) rotate(a) {
         translate([0, 0, zc - 40]) rotate([0, 90, 0]) cylinder(d = 40, h = dron_eje/2, $fn = 32);
         translate([dron_eje/2, 0, zc - 60]) cylinder(d = 70, h = helice_z + 50 + adap_e, $fn = 48);
-        translate([dron_eje/2, 0, helice_z]) cylinder(d = helice_d, h = 2, $fn = 96);
     }
     // tren de aterrizaje
     for (sx = [-1, 1]) {
@@ -301,6 +300,10 @@ module dron() {
             translate([sx*140, sy*150, zc - dron_cuerpo[2] - 230]) sphere(d = 18, $fn = 24);
         }
     }
+}
+
+module helices() {
+    for (a = [45:90:315]) rotate(a) translate([dron_eje/2, 0, helice_z]) cylinder(d = helice_d, h = 2, $fn = 96);
 }
 
 // =============================================================================
@@ -322,7 +325,7 @@ module mecanismo() {
     color("Gainsboro")    adaptador();
 }
 
-if      (pieza == "conjunto")   { mecanismo(); color("#3a3d42") dron(); }
+if      (pieza == "conjunto")   { mecanismo(); color("#3a3d42") dron(); color("LightSteelBlue", 0.2) helices(); }
 else if (pieza == "mecanismo")  mecanismo();
 else if (pieza == "base")       base();
 else if (pieza == "tubo")       tubo();
@@ -338,3 +341,4 @@ else if (pieza == "solenoide")  solenoide();
 else if (pieza == "embolo")     embolo();
 else if (pieza == "paracaidas") paracaidas();
 else if (pieza == "dron")       dron();
+else if (pieza == "helices")    helices();
