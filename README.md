@@ -3,8 +3,8 @@
 Sistema autónomo que detecta la caída libre del dron con una IMU y despliega un paracaídas mediante un tubo de muelle. Funciona **independiente del flight controller**: tiene su propia batería, su MCU y su sensor.
 
 <p align="center">
-  <a href="https://claude.ai/artifact/HH7TuvKMzHhvBDsvPzRwz9"><img src="docs/img/mecanismo.png" alt="Mecanismo de tubo de muelle montado sobre el dron, con la caja de la electrónica al lado" height="360"></a>
-  <img src="docs/img/pcb.png" alt="Render 3D de la placa de control de 60 × 40 mm" height="360">
+  <a href="https://claude.ai/artifact/HH7TuvKMzHhvBDsvPzRwz9"><img src="docs/img/mecanismo.png" alt="Mecanismo de tubo de muelle montado sobre el dron, con la caja de la electrónica al lado" width="39%"></a>
+  <img src="docs/img/pcb.png" alt="Render 3D de la placa de control de 60 × 40 mm" width="57%">
 </p>
 <p align="center"><sub>Izquierda: mecanismo en el <a href="https://claude.ai/artifact/HH7TuvKMzHhvBDsvPzRwz9">visor 3D</a>. Derecha: placa de control (render de KiCad).</sub></p>
 
