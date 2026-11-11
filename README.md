@@ -2,11 +2,17 @@
 
 Sistema autónomo que detecta la caída libre del dron con una IMU y despliega un paracaídas mediante un tubo de muelle. Funciona **independiente del flight controller**: tiene su propia batería, su MCU y su sensor.
 
+<p align="center">
+  <a href="https://claude.ai/artifact/HH7TuvKMzHhvBDsvPzRwz9"><img src="docs/img/mecanismo.png" alt="Mecanismo de tubo de muelle montado sobre el dron, con la caja de la electrónica al lado" height="360"></a>
+  <img src="docs/img/pcb.png" alt="Render 3D de la placa de control de 60 × 40 mm" height="360">
+</p>
+<p align="center"><sub>Izquierda: mecanismo en el <a href="https://claude.ai/artifact/HH7TuvKMzHhvBDsvPzRwz9">visor 3D</a>. Derecha: placa de control (render de KiCad).</sub></p>
+
 | | |
 |---|---|
 | **Dron objetivo** | DJI Matrice 400: 9.74 kg con baterías, MTOW 15.8 kg |
-| **MCU** | PIC18F25K22 (SSOP-28) con oscilador interno + PLL, 3.3 V |
-| **IMU** | BMI088 (acelerómetro ±24 g + giróscopo) soldado en la placa, I²C: acel. 0x18 / giro 0x68 |
+| **MCU** | PIC18F25K22 (SSOP-28) con oscilador interno de 16 MHz sin PLL, 3.3 V |
+| **IMU** | BMI088 (acelerómetro ±12 g + giróscopo ±1000 °/s) soldado en la placa, I²C: acel. 0x18 / giro 0x68 |
 | **Actuador** | Solenoide 5 V que libera el pestillo de un tubo de muelle |
 | **Mecanismo** | Tubo Ø100 × 280 mm con tapa articulada, modelo paramétrico OpenSCAD y [visor 3D](https://claude.ai/artifact/HH7TuvKMzHhvBDsvPzRwz9) |
 | **Paracaídas** | Circular, ripstop nylon 30D, **Ø3.5 m**, 12 gajos, descenso ≤ 6 m/s a 16 kg |
